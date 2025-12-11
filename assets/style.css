@@ -1,0 +1,20 @@
+/* Simple layout */
+html,body{height:100%;margin:0;padding:0}
+#map{height:100%;width:100%;margin:0;padding:0;flex:1;background-color:#f0f0f0}
+body{display:flex;font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP'}
+#controls{width:320px;padding:12px;background:#fff;box-shadow:2px 2px 8px rgba(0,0,0,0.08);overflow-y:auto;z-index:1000;max-height:100vh}
+#map{flex:1}
+#legend{margin-top:8px}
+#status{margin-top:8px;color:#666}
+label{display:block;margin:6px 0}
+#controls button{margin:4px 6px 8px 0;padding:6px 10px;background:#f0f0f0;border:1px solid #ccc;border-radius:4px}
+#controls button:hover{background:#e0e0e0}
+select{width:100%;padding:6px 4px;margin:4px 0 8px 0;border:1px solid #ccc;border-radius:4px;font-family:inherit;font-size:0.95em}
+
+/* MaplibreGL popup styling */
+.maplibregl-popup-content {
+  padding: 0 !important;
+  border-radius: 4px;
+}
+
+

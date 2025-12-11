@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>到達圏マップ (Rail Isochrone)</title>
+  <link href="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.js"></script>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div id="controls">
+    <h1>鉄道到達圏マップ</h1>
+    <p>2時間以内に到達可能なエリアを表示します。地図をクリックして出発地点（自宅・職場・学校など）を指定してください。交通手段は鉄道と徒歩のみを想定しています。詳細はこちら。</p>
+    <div id="originInfo" style="background: #f0f0f0; padding: 8px; border-radius: 4px; margin: 8px 0; display: none;">
+      <div style="font-size: 0.9em; color: #666;">出発地点:</div>
+      <div id="originCoords" style="font-weight: bold; font-family: monospace; font-size: 0.85em; margin: 4px 0;"></div>
+      <div id="originStation" style="font-size: 0.85em; color: #333;"></div>
+    </div>
+    <div>
+      <label for="citySelect">都市を選択:</label>
+      <select id="citySelect">
+        <option value="">-- 都市を選択 --</option>
+        <option value="sapporo">札幌市</option>
+        <option value="sendai">仙台市</option>
+        <option value="tokyo">東京都</option>
+        <option value="yokohama">横浜市</option>
+        <option value="nagoya">名古屋市</option>
+        <option value="osaka">大阪市</option>
+        <option value="kobe">神戸市</option>
+        <option value="kyoto">京都市</option>
+        <option value="fukuoka">福岡市</option>
+      </select>
+    </div>
+    <div>
+      <button id="resetBtn">到達圏をリセット</button>
+      <button id="lockBtn" style="margin-left: 8px; display: none;">到達圏を固定する</button>
+      <button id="unlockBtn" style="margin-left: 8px; display: none; background-color: #ff9900;">到達圏の固定を解除</button>
+    </div>
+    <div id="stationTable" style="display: none; margin-top: 16px;">
+      <h3>到達駅一覧（<span id="totalCount">0</span>件）</h3>
+      <div id="tableContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; background: #fff;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+          <thead style="position: sticky; top: 0; background: #f0f0f0;">
+            <tr>
+              <th style="border: 1px solid #ddd; padding: 6px; text-align: left;">駅名</th>
+              <th style="border: 1px solid #ddd; padding: 6px; text-align: right; width: 60px;">時間</th>
+            </tr>
+          </thead>
+          <tbody id="stationTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div id="status"></div>
+    <div style="margin-top:8px">Zoom: <span id="zoomLevel">-</span></div>
+    <hr>
+    <p><small>データ: `railway_graph_final.json`, `geojson/station.geojson` を使用。</small></p>
+  </div>
+
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/proj4@2.8.0/dist/proj4.js"></script>
+  <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+  <script src="assets/utils.js"></script>
+  <script src="assets/dijkstra.js"></script>
+  <script src="assets/isochrone.js"></script>
+  <script src="assets/map-layers.js"></script>
+  <script src="assets/main.js"></script>
+</body>
+</html>
