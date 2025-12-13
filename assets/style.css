@@ -1,20 +1,784 @@
-/* Simple layout */
-html,body{height:100%;margin:0;padding:0}
-#map{height:100%;width:100%;margin:0;padding:0;flex:1;background-color:#f0f0f0}
-body{display:flex;font-family:system-ui, -apple-system, 'Segoe UI', Roboto, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP'}
-#controls{width:320px;padding:12px;background:#fff;box-shadow:2px 2px 8px rgba(0,0,0,0.08);overflow-y:auto;z-index:1000;max-height:100vh}
-#map{flex:1}
-#legend{margin-top:8px}
-#status{margin-top:8px;color:#666}
-label{display:block;margin:6px 0}
-#controls button{margin:4px 6px 8px 0;padding:6px 10px;background:#f0f0f0;border:1px solid #ccc;border-radius:4px}
-#controls button:hover{background:#e0e0e0}
-select{width:100%;padding:6px 4px;margin:4px 0 8px 0;border:1px solid #ccc;border-radius:4px;font-family:inherit;font-size:0.95em}
+/* Modern layout */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP';
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  background-color: #f8f8f8;
+}
+
+/* Title Bar (Mobile) */
+#titleBar {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 1001;
+  align-items: center;
+  padding: 0 12px;
+  gap: 12px;
+}
+
+#mobileTitle {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #1a1a1a;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* モバイルタイトルコンテナ */
+.mobileTitleContainer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* モバイル用ベータバッジ */
+.betaBadgeMobile {
+  display: inline-block;
+  background: #ff6b6b;
+  color: white;
+  font-size: 0.55em;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* モバイル版最終更新日 */
+.mobileLastUpdated {
+  font-size: 0.65em;
+  color: #999;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Menu Toggle Button (Mobile) */
+#menuToggleBtn {
+  display: none;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  width: 48px;
+  height: 48px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+#menuToggleBtn:active {
+  transform: scale(0.95);
+}
+
+.hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  gap: 4px;
+}
+
+.hamburger-line {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #1a1a1a;
+  border-radius: 1px;
+  transition: all 0.3s ease;
+}
+
+#menuToggleBtn.active .hamburger-line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+#menuToggleBtn.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+#menuToggleBtn.active .hamburger-line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Controls Panel */
+#controls {
+  width: 340px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  overflow-y: auto;
+  z-index: 1000;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+#controlsHeader {
+  padding: 20px 16px;
+  border-bottom: 1px solid #e8e8e8;
+  flex-shrink: 0;
+}
+
+#controlsHeader h1 {
+  margin: 0 0 8px 0;
+  font-size: 1.4em;
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: -0.3px;
+}
+
+.headerDescription {
+  margin: 0;
+  font-size: 0.85em;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Control Sections */
+.controlSection {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+}
+
+.controlSection:last-child {
+  border-bottom: none;
+}
+
+.sectionLabel {
+  display: block;
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Form Elements */
+.selectControl {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95em;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+
+.selectControl:hover {
+  border-color: #999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.selectControl:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+/* Buttons */
+.buttonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#controls button,
+.primaryBtn,
+.secondaryBtn,
+.warningBtn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.primaryBtn {
+  background-color: #0066cc;
+  color: #ffffff;
+}
+
+.primaryBtn:hover {
+  background-color: #0052a3;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+}
+
+.primaryBtn:active {
+  transform: translateY(1px);
+}
+
+.secondaryBtn {
+  background-color: #e8e8e8;
+  color: #1a1a1a;
+  border: 1px solid #d0d0d0;
+}
+
+.secondaryBtn:hover {
+  background-color: #d8d8d8;
+  border-color: #999;
+}
+
+.warningBtn {
+  background-color: #ff9900;
+  color: #ffffff;
+}
+
+.warningBtn:hover {
+  background-color: #e68a00;
+  box-shadow: 0 2px 8px rgba(255, 153, 0, 0.3);
+}
+
+.warningBtn:active {
+  transform: translateY(1px);
+}
+
+/* Origin Info */
+#originInfo {
+  background-color: #f0f8ff;
+  border: 1px solid #bde3ff;
+  border-radius: 6px;
+  padding: 12px !important;
+}
+
+.originText {
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85em;
+  color: #333;
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+.originStation {
+  font-size: 0.85em;
+  color: #555;
+  margin-top: 4px;
+}
+
+/* Table */
+.tableContainer {
+  max-height: 300px;
+  overflow-x: auto;
+  overflow-y: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.stationTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+  white-space: nowrap;
+}
+
+.stationTable thead {
+  position: sticky;
+  top: 0;
+  background: #f8f8f8;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.tableHeader {
+  border: 1px solid #e0e0e0;
+  padding: 8px 6px;
+  text-align: center;
+  min-width: 70px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  color: #555;
+  transition: background-color 0.2s;
+}
+
+.tableHeader:hover {
+  background-color: #eeeeee;
+}
+
+.stationTable tbody tr {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.stationTable tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+.stationTable td {
+  border: 1px solid #e0e0e0;
+  padding: 8px 6px;
+  text-align: center;
+}
+
+/* Legend */
+.legendContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85em;
+  color: #555;
+}
+
+.legendColor {
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  border-radius: 1.5px;
+  flex-shrink: 0;
+}
+
+/* Status Section */
+.statusSection {
+  background-color: #f8f8f8;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.statusText {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 6px;
+  min-height: 20px;
+}
+
+.zoomInfo {
+  font-size: 0.8em;
+  color: #999;
+  font-weight: 500;
+}
 
 /* MaplibreGL popup styling */
 .maplibregl-popup-content {
   padding: 0 !important;
-  border-radius: 4px;
+  border-radius: 6px;
+  background: transparent;
 }
+
+.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+  border-top-color: #ffffff;
+}
+
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: #ffffff;
+}
+
+/* Station Popup */
+.stationPopupHeader {
+  background: linear-gradient(135deg, #0066cc, #004d99);
+  color: white;
+  padding: 10px 14px;
+  font-weight: 600;
+  font-size: 1em;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
+.stationPopupLine {
+  padding: 8px 14px;
+  text-align: center;
+  font-size: 0.8em;
+  border-bottom: 1px solid #e8e8e8;
+  color: #555;
+  font-weight: 500;
+}
+
+.stationPopupCompany {
+  padding: 6px 14px;
+  text-align: center;
+  font-size: 0.75em;
+  color: #888;
+}
+
+/* Rail Popup */
+.railPopup {
+  background: #ffffff;
+  color: #333;
+  padding: 8px 12px;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.8em;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+}
+
+/* Scrollbar styling */
+#controls::-webkit-scrollbar {
+  width: 6px;
+}
+
+#controls::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+#controls::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+#controls::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Responsive Design - Tablet and Mobile */
+@media (max-width: 1024px) {
+  /* Tablet: Slightly reduced control panel width */
+  #controls {
+    width: 300px;
+  }
+  
+  .selectControl,
+  #controls button,
+  .primaryBtn,
+  .secondaryBtn,
+  .warningBtn {
+    font-size: 0.9em;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Large tablet / Small desktop: Switch to hamburger menu */
+  #titleBar {
+    display: flex;
+  }
+  
+  #menuToggleBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  body {
+    flex-direction: column;
+  }
+  
+  #controls {
+    position: fixed;
+    left: 0;
+    top: 56px;
+    width: 85vw;
+    max-width: 340px;
+    height: calc(100vh - 56px);
+    transform: translateX(-100%);
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    border-radius: 0;
+  }
+  
+  #controls.open {
+    transform: translateX(0);
+  }
+  
+  #map {
+    width: 100%;
+    height: 100%;
+    margin-top: 56px;
+  }
+  
+  #controlsHeader {
+    padding: 16px;
+    padding-top: 20px;
+  }
+  
+  #controlsHeader h1 {
+    font-size: 1.2em;
+    margin-bottom: 6px;
+  }
+  
+  .headerDescription {
+    font-size: 0.8em;
+  }
+  
+  .controlSection {
+    padding: 12px;
+  }
+  
+  .sectionLabel {
+    font-size: 0.85em;
+    margin-bottom: 8px;
+  }
+  
+  .selectControl {
+    padding: 10px;
+    font-size: 0.9em;
+  }
+  
+  .tableContainer {
+    max-height: 250px;
+    font-size: 0.75em;
+  }
+  
+  .stationTable {
+    font-size: 0.75em;
+  }
+  
+  .tableHeader {
+    min-width: 60px;
+    padding: 6px 4px;
+    font-size: 0.75em;
+  }
+  
+  .stationTable td {
+    padding: 6px 4px;
+    font-size: 0.75em;
+  }
+  
+  #controls button,
+  .primaryBtn,
+  .secondaryBtn,
+  .warningBtn {
+    padding: 10px 12px;
+    font-size: 0.85em;
+  }
+  
+  .originText {
+    font-size: 0.8em;
+  }
+  
+  .originStation {
+    font-size: 0.75em;
+  }
+  
+  .legendItem {
+    font-size: 0.8em;
+  }
+  
+  .statusText {
+    font-size: 0.8em;
+  }
+  
+  .zoomInfo {
+    font-size: 0.75em;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Mobile: Fine-tune for smaller screens */
+  #titleBar {
+    height: 56px;
+  }
+  
+  #controlsHeader {
+    padding: 16px;
+    padding-top: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Very small mobile phones */
+  #titleBar {
+    height: 52px;
+    padding: 0 8px;
+  }
+  
+  #mobileTitle {
+    font-size: 1em;
+  }
+  
+  #controls {
+    width: 90vw;
+    top: 52px;
+    height: calc(100vh - 52px);
+  }
+  
+  #map {
+    margin-top: 52px;
+  }
+  
+  #controlsHeader h1 {
+    font-size: 1.1em;
+  }
+  
+  .controlSection {
+    padding: 10px;
+  }
+  
+  .tableContainer {
+    max-height: 200px;
+  }
+  
+  .stationTable {
+    font-size: 0.7em;
+  }
+  
+  .tableHeader {
+    min-width: 50px;
+    padding: 4px 2px;
+  }
+  
+  .stationTable td {
+    padding: 4px 2px;
+  }
+  
+  #menuToggleBtn {
+    width: 44px;
+    height: 44px;
+    padding: 6px;
+  }
+  
+  .hamburger-line {
+    width: 20px;
+  }
+}
+
+/* Overlay for mobile menu */
+body.menuOpen::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+
+/* Loading Overlay and Spinner */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(1px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.loadingOverlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+/* Spinner Animation - Subtle and elegant */
+.loadingSpinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid #f0f0f0;
+  border-top-color: #666;
+  border-right-color: #888;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingText {
+  font-size: 0.95em;
+  font-weight: 400;
+  color: #555;
+  min-height: 24px;
+  letter-spacing: 0.2px;
+}
+
+/* Progress Bar - Minimal and understated */
+.loadingProgress {
+  width: 180px;
+  height: 3px;
+  background: #e8e8e8;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.loadingProgressBar {
+  height: 100%;
+  background: #999;
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.25s ease;
+}
+
+/* Prevent interaction during loading */
+.loadingOverlay:not(.hidden) {
+  pointer-events: auto;
+  user-select: none;
+}
+
+body.loading #controls,
+body.loading #map,
+body.loading #titleBar {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+/* ベータ版バッジ */
+.betaBadge {
+  display: inline-block;
+  background: #ff6b6b;
+  color: white;
+  font-size: 0.65em;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  vertical-align: middle;
+}
+
+/* 最終更新日 */
+.lastUpdated {
+  font-size: 0.75em;
+  color: #888;
+  margin: 6px 0 0 0;
+  font-style: italic;
+}
+
 
 

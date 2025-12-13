@@ -8,6 +8,7 @@ class MapLayerManager {
     this.railLayerId = 'rail-layer';
     this.isochronesPointLayerId = 'isochrones-point-layer';
     this.isochronesHeatmapLayerId = 'isochrones-heatmap-layer';
+    this.HIT_BOX_SIZE = 15; // タップ判定エリアサイズ（ピクセル）
   }
 
   // 駅レイヤの作成と追加
@@ -60,6 +61,16 @@ class MapLayerManager {
           }
         };
       });
+      
+      // N02_002の値が大きい順（降順）にソート
+      // 値が大きい = 優先度が低い = 下（裏）に描画
+      // 値が小さい = 優先度が高い = 上（表）に描画
+      stationFeatures.sort((a, b) => {
+        const typeA = parseInt(a.properties.type) || 0;
+        const typeB = parseInt(b.properties.type) || 0;
+        return typeB - typeA;
+      });
+      
       perfEnd('stations-map');
       
       // ソースを追加
@@ -158,6 +169,16 @@ class MapLayerManager {
           }
         };
       });
+      
+      // N02_002の値が大きい順（降順）にソート
+      // 値が大きい = 優先度が低い = 下（裏）に描画
+      // 値が小さい = 優先度が高い = 上（表）に描画
+      railFeatures.sort((a, b) => {
+        const typeA = parseInt(a.properties.type) || 0;
+        const typeB = parseInt(b.properties.type) || 0;
+        return typeB - typeA;
+      });
+      
       perfEnd('rails-transform');
 
       // ソースを追加
@@ -181,7 +202,7 @@ class MapLayerManager {
           id: this.railLayerId,
           type: 'line',
           source: 'rails',
-          minzoom: 9,
+          minzoom: 0,
           maxzoom: 24,
           paint: {
             'line-color': [
@@ -402,10 +423,12 @@ class MapLayerManager {
     // デバイス検出：モバイルの場合はタップで対応
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    let currentPopup = null;
+    this.currentPopup = null;
+    this.lastClickedFeature = null; // スマホ版で駅/線路タップを記録
     let lastHoveredId = null;
     let lastMoveTime = 0;
     const THROTTLE_MS = 50; // mousemove を50msごとに実行
+    const HIT_BOX_SIZE = this.HIT_BOX_SIZE; // クラスプロパティから参照
 
     // ===============================
     // PC版: マウスホバーでポップアップ表示
@@ -419,9 +442,12 @@ class MapLayerManager {
         }
         lastMoveTime = now;
 
-        // マウス位置のフィーチャーを検出
+        // マウス位置の周囲範囲のフィーチャーを検出
         const features = this.map.queryRenderedFeatures(
-          e.point,
+          [
+            [e.point.x - HIT_BOX_SIZE, e.point.y - HIT_BOX_SIZE],
+            [e.point.x + HIT_BOX_SIZE, e.point.y + HIT_BOX_SIZE]
+          ],
           {layers: [this.stationsLayerId, this.railLayerId]}
         );
 
@@ -464,28 +490,25 @@ class MapLayerManager {
         lastHoveredId = hoveredId;
 
         // 既存ポップアップを必ず削除
-        if(currentPopup) {
-          currentPopup.remove();
-          currentPopup = null;
+        if(this.currentPopup) {
+          this.currentPopup.remove();
+          this.currentPopup = null;
         }
 
         // 新しいポップアップを表示
         if(hoveredStation) {
-          currentPopup = this._createStationPopup(hoveredStation);
-          currentPopup.addTo(this.map);
+          this.currentPopup = this._createStationPopup(hoveredStation);
+          this.currentPopup.addTo(this.map);
         } else if(hoveredRail) {
-          currentPopup = this._createRailPopup(hoveredRail, e.lngLat);
-          currentPopup.addTo(this.map);
+          this.currentPopup = this._createRailPopup(hoveredRail, e.lngLat);
+          this.currentPopup.addTo(this.map);
         }
       });
 
-      // マウスが地図外に出たときポップアップを削除
+      // mouseleave時にポップアップを削除しない（新しいポップアップ作成時のみ削除）
       this.map.on('mouseleave', () => {
         lastHoveredId = null;
-        if(currentPopup) {
-          currentPopup.remove();
-          currentPopup = null;
-        }
+        // ポップアップは削除しない - 新しいポップアップ作成時のみ削除される
       });
     }
 
@@ -494,8 +517,12 @@ class MapLayerManager {
     // ===============================
     else {
       this.map.on('click', (e) => {
+        // タップ周囲の広い範囲でフィーチャーを検出
         const features = this.map.queryRenderedFeatures(
-          e.point,
+          [
+            [e.point.x - HIT_BOX_SIZE, e.point.y - HIT_BOX_SIZE],
+            [e.point.x + HIT_BOX_SIZE, e.point.y + HIT_BOX_SIZE]
+          ],
           {layers: [this.stationsLayerId, this.railLayerId]}
         );
 
@@ -522,33 +549,32 @@ class MapLayerManager {
           }
         }
 
-        // 既存ポップアップを削除
-        if(currentPopup) {
-          currentPopup.remove();
-          currentPopup = null;
-        }
+        // 駅または線路をタップした場合
+        if(clickedStation || clickedRail) {
+          // 駅/線路がタップされたことをフラグで記録
+          this.lastClickedFeature = clickedStation || clickedRail;
+          
+          // 既存ポップアップを削除
+          if(this.currentPopup) {
+            this.currentPopup.remove();
+            this.currentPopup = null;
+          }
 
-        // クリックされたフィーチャーのポップアップを表示
-        if(clickedStation) {
-          currentPopup = this._createStationPopup(clickedStation);
-          currentPopup.addTo(this.map);
-        } else if(clickedRail) {
-          currentPopup = this._createRailPopup(clickedRail, e.lngLat);
-          currentPopup.addTo(this.map);
-        }
-      });
-
-      // 地図をクリックして空いている場所をタップしたときはポップアップを削除
-      this.map.on('click', (e) => {
-        const features = this.map.queryRenderedFeatures(
-          e.point,
-          {layers: [this.stationsLayerId, this.railLayerId]}
-        );
-        
-        if(!features || features.length === 0) {
-          if(currentPopup) {
-            currentPopup.remove();
-            currentPopup = null;
+          // クリックされたフィーチャーのポップアップを表示
+          if(clickedStation) {
+            this.currentPopup = this._createStationPopup(clickedStation);
+            this.currentPopup.addTo(this.map);
+          } else if(clickedRail) {
+            this.currentPopup = this._createRailPopup(clickedRail, e.lngLat);
+            this.currentPopup.addTo(this.map);
+          }
+        } else {
+          // 駅/線路がない空いている場所をタップした場合
+          this.lastClickedFeature = null;
+          
+          if(this.currentPopup) {
+            this.currentPopup.remove();
+            this.currentPopup = null;
           }
         }
       });
@@ -568,15 +594,15 @@ class MapLayerManager {
     div.style.cssText = `
       background: white;
       padding: 0;
-      border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       overflow: hidden;
-      min-width: 120px;
+      min-width: 140px;
     `;
     div.innerHTML = `
-      <div style="background: ${bgColor}; color: white; padding: 8px 12px; font-weight: bold; font-size: 1.1em; text-align: center; letter-spacing: 0.05em;">${stationName}駅</div>
-      <div style="padding: 6px 12px; text-align: center; font-size: 0.75em; border-bottom: 1px solid #ddd;">${line}</div>
-      <div style="padding: 4px 12px; text-align: center; font-size: 0.7em; color: #666;">${company}</div>
+      <div class="stationPopupHeader" style="background: ${bgColor};">${stationName}駅</div>
+      <div class="stationPopupLine">${line}</div>
+      <div class="stationPopupCompany">${company}</div>
     `;
 
     const popup = new maplibregl.Popup({
@@ -597,7 +623,7 @@ class MapLayerManager {
     const line = railFeature.properties.name || '線路';
 
     const div = document.createElement('div');
-    div.style.cssText = 'background: white; padding: 8px 12px; border-radius: 4px; font-size: 0.8em; box-shadow: 0 2px 8px rgba(0,0,0,0.3); font-weight: bold; text-align: center;';
+    div.className = 'railPopup';
     div.textContent = line;
 
     const popup = new maplibregl.Popup({
