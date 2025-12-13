@@ -4,22 +4,49 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>到達圏マップ (Rail Isochrone)</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link href="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.js"></script>
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <div id="controls">
-    <h1>鉄道到達圏マップ</h1>
-    <p>2時間以内に到達可能なエリアを表示します。地図をクリックして出発地点（自宅・職場・学校など）を指定してください。交通手段は鉄道と徒歩のみを想定しています。詳細はこちら。</p>
-    <div id="originInfo" style="background: #f0f0f0; padding: 8px; border-radius: 4px; margin: 8px 0; display: none;">
-      <div style="font-size: 0.9em; color: #666;">出発地点:</div>
-      <div id="originCoords" style="font-weight: bold; font-family: monospace; font-size: 0.85em; margin: 4px 0;"></div>
-      <div id="originStation" style="font-size: 0.85em; color: #333;"></div>
+  <!-- タイトルバー（モバイル版） -->
+  <div id="titleBar">
+    <button id="menuToggleBtn" class="menuToggleBtn" aria-label="メニューを開く">
+      <span class="hamburger">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </span>
+    </button>
+    <div class="mobileTitleContainer">
+      <h1 id="mobileTitle">鉄道到達圏マップ</h1>
+      <span class="betaBadgeMobile">BETA</span>
     </div>
-    <div>
-      <label for="citySelect">都市を選択:</label>
-      <select id="citySelect">
+    <div id="mobileLastUpdate" class="mobileLastUpdated"></div>
+  </div>
+
+  <div id="controls">
+    <div id="controlsHeader">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <h1>鉄道到達圏マップ</h1>
+        <span class="betaBadge">BETA</span>
+      </div>
+      <p class="headerDescription">2時間以内に到達可能なエリアを表示します。地図をクリックして出発地点を指定してください。</p>
+      <p class="lastUpdated">最終更新: <span id="lastUpdateDate"></span></p>
+    </div>
+
+    <!-- セクション1: 現在地点情報 -->
+    <div id="originInfo" class="controlSection" style="display: none;">
+      <div class="sectionLabel">📍 出発地点</div>
+      <div id="originCoords" class="originText"></div>
+      <div id="originStation" class="originStation"></div>
+    </div>
+
+    <!-- セクション2: 都市選択 -->
+    <div class="controlSection">
+      <div class="sectionLabel">🏙️ 都市選択</div>
+      <select id="citySelect" class="selectControl">
         <option value="">-- 都市を選択 --</option>
         <option value="sapporo">札幌市</option>
         <option value="sendai">仙台市</option>
@@ -32,19 +59,28 @@
         <option value="fukuoka">福岡市</option>
       </select>
     </div>
-    <div>
-      <button id="resetBtn">到達圏をリセット</button>
-      <button id="lockBtn" style="margin-left: 8px; display: none;">到達圏を固定する</button>
-      <button id="unlockBtn" style="margin-left: 8px; display: none; background-color: #ff9900;">到達圏の固定を解除</button>
+
+    <!-- セクション3: アクション -->
+    <div class="controlSection">
+      <div class="sectionLabel">⚙️ 操作</div>
+      <div class="buttonGroup">
+        <button id="resetBtn" class="primaryBtn">到達圏をリセット</button>
+        <button id="lockBtn" class="secondaryBtn" style="display: none;">到達圏を固定</button>
+        <button id="unlockBtn" class="warningBtn" style="display: none;">固定を解除</button>
+      </div>
     </div>
-    <div id="stationTable" style="display: none; margin-top: 16px;">
-      <h3>到達駅一覧（<span id="totalCount">0</span>件）</h3>
-      <div id="tableContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; background: #fff;">
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
-          <thead style="position: sticky; top: 0; background: #f0f0f0;">
-            <tr>
-              <th style="border: 1px solid #ddd; padding: 6px; text-align: left;">駅名</th>
-              <th style="border: 1px solid #ddd; padding: 6px; text-align: right; width: 60px;">時間</th>
+
+    <!-- セクション4: 到達駅一覧 -->
+    <div id="stationTable" class="controlSection" style="display: none;">
+      <div class="sectionLabel">🚉 到達駅一覧（<span id="totalCount">0</span>件）</div>
+      <div id="tableContainer" class="tableContainer">
+        <table class="stationTable">
+          <thead>
+            <tr id="tableHeaderRow">
+              <th id="headerStation" class="tableHeader">駅名</th>
+              <th id="headerTime" class="tableHeader">到達時間</th>
+              <th id="headerCompany" class="tableHeader">運営会社</th>
+              <th id="headerLine" class="tableHeader">路線名</th>
             </tr>
           </thead>
           <tbody id="stationTableBody">
@@ -52,20 +88,90 @@
         </table>
       </div>
     </div>
-    <div id="status"></div>
-    <div style="margin-top:8px">Zoom: <span id="zoomLevel">-</span></div>
-    <hr>
-    <p><small>データ: `railway_graph_final.json`, `geojson/station.geojson` を使用。</small></p>
+
+    <!-- セクション5: 凡例 -->
+    <div class="controlSection">
+      <div class="sectionLabel">🚆 鉄道路線凡例</div>
+      <div class="legendContainer">
+        <div class="legendItem">
+          <span class="legendColor" style="background: rgb(255, 0, 0);"></span>
+          <span>新幹線（JR）</span>
+        </div>
+        <div class="legendItem">
+          <span class="legendColor" style="background: rgb(0, 170, 0);"></span>
+          <span>在来線（JR）</span>
+        </div>
+        <div class="legendItem">
+          <span class="legendColor" style="background: rgb(0, 0, 255);"></span>
+          <span>公営鉄道</span>
+        </div>
+        <div class="legendItem">
+          <span class="legendColor" style="background: rgb(255, 153, 0);"></span>
+          <span>民営鉄道</span>
+        </div>
+        <div class="legendItem">
+          <span class="legendColor" style="background: rgb(153, 0, 255);"></span>
+          <span>第三セクター</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- セクション6: ステータス -->
+    <div class="controlSection statusSection">
+      <div id="status" class="statusText"></div>
+      <div class="zoomInfo">Zoom: <span id="zoomLevel">-</span></div>
+    </div>
+  </div>
+
+  <!-- ローディングオーバーレイ -->
+  <div id="loadingOverlay" class="loadingOverlay">
+    <div class="loadingContainer">
+      <div class="loadingSpinner"></div>
+      <div id="loadingText" class="loadingText">読み込み中...</div>
+      <div id="loadingProgress" class="loadingProgress">
+        <div id="loadingProgressBar" class="loadingProgressBar"></div>
+      </div>
+    </div>
   </div>
 
   <div id="map"></div>
 
   <script src="https://unpkg.com/proj4@2.8.0/dist/proj4.js"></script>
   <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+  <!-- ローディング管理 -->
+  <script src="assets/loading-manager.js"></script>
+  <!-- ユーティリティ・アルゴリズム -->
   <script src="assets/utils.js"></script>
   <script src="assets/dijkstra.js"></script>
-  <script src="assets/isochrone.js"></script>
+  <!-- 設定 -->
+  <script src="assets/config.js"></script>
+  <!-- 機能モジュール -->
+  <script src="assets/isochrone-service.js"></script>
+  <script src="assets/ui-controller.js"></script>
   <script src="assets/map-layers.js"></script>
+  <!-- レガシー（後方互換性） -->
+  <script src="assets/isochrone.js"></script>
+  <!-- メイン -->
   <script src="assets/main.js"></script>
+  <script>
+    // 最終更新日を設定
+    document.addEventListener('DOMContentLoaded', function() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const dateStr = `${year}年${month}月${day}日`;
+      
+      // PC版
+      document.getElementById('lastUpdateDate').textContent = dateStr;
+      
+      // モバイル版
+      const mobileUpdateEl = document.getElementById('mobileLastUpdate');
+      if (mobileUpdateEl) {
+        mobileUpdateEl.textContent = dateStr;
+      }
+    });
+  </script>
 </body>
+
 </html>
