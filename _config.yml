@@ -1,0 +1,40 @@
+# Jekyll Configuration for GitHub Pages
+# GitHub Pages で自動的に処理される設定
+
+# Jekyll settings
+markdown: kramdown
+theme: null
+plugins: []
+
+# Build settings
+exclude:
+  - README.md
+  - OPTIMIZATION_REPORT.md
+  - OPTIMIZATION_IMPLEMENTATION.md
+  - NGINX_COMPRESSION_CONFIG.conf
+  - verify_optimization.sh
+  - .htaccess
+
+# Asset processing
+sass:
+  style: compressed
+
+# Compression
+compress_html:
+  clippings: all
+  comments: all
+  endings: all
+  startings: []
+  blanklines: false
+  profile: false
+
+# GitHub Pages will automatically gzip these files
+include:
+  - .htaccess
+  - railway_graph_final.json
+  - geojson
+
+# Disable Jekyll processing for specific files
+keep_files:
+  - geojson
+  - assets

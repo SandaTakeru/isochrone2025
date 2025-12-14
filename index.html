@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- GitHub Pages キャッシュ制御 -->
+  <meta http-equiv="Cache-Control" content="public, max-age=3600">
   <title>到達圏マップ (Rail Isochrone)</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link href="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.css" rel="stylesheet" />
@@ -32,18 +34,11 @@
         <h1>鉄道到達圏マップ</h1>
         <span class="betaBadge">BETA</span>
       </div>
-      <p class="headerDescription">2時間以内に到達可能なエリアを表示します。地図をクリックして出発地点を指定してください。</p>
+      <p class="headerDescription">時間内に到達可能なエリアを表示します。地図上で出発地点を指定してください。速度条件など、詳しくはこちら。</p>
       <p class="lastUpdated">最終更新: <span id="lastUpdateDate"></span></p>
     </div>
 
-    <!-- セクション1: 現在地点情報 -->
-    <div id="originInfo" class="controlSection" style="display: none;">
-      <div class="sectionLabel">📍 出発地点</div>
-      <div id="originCoords" class="originText"></div>
-      <div id="originStation" class="originStation"></div>
-    </div>
-
-    <!-- セクション2: 都市選択 -->
+    <!-- セクション1: 位置検索 -->
     <div class="controlSection">
       <div class="sectionLabel">🏙️ 都市選択</div>
       <select id="citySelect" class="selectControl">
@@ -60,9 +55,30 @@
       </select>
     </div>
 
+    <div class="controlSection">
+      <div class="sectionLabel">🔍 住所検索</div>
+      <div class="addressSearchContainer">
+        <input type="text" id="addressInput" class="addressInput" placeholder="住所を入力してください" aria-label="住所入力欄">
+        <button id="addressSearchBtn" class="addressSearchBtn" aria-label="検索">🔍住所検索</button>
+      </div>
+      <div id="addressSearchResults" class="addressSearchResults" style="display: none;"></div>
+    </div>
+
+    <!-- セクション2: 解析時間設定 -->
+    <div class="controlSection">
+      <div class="sectionLabel">⏱️ 到達時間（最大12時間）</div>
+      <div class="timeInputContainer">
+        <div class="timeDisplayRow">
+          <span id="timeDisplay" class="timeDisplayEditable" contenteditable="true">1時間</span>
+        </div>
+
+        <input type="range" id="timeSlider" class="timeSlider" min="1" max="144" value="12" step="1">
+      </div>
+    </div>
+
     <!-- セクション3: アクション -->
     <div class="controlSection">
-      <div class="sectionLabel">⚙️ 操作</div>
+      <div class="sectionLabel">⚙️ 到達圏の設定</div>
       <div class="buttonGroup">
         <button id="resetBtn" class="primaryBtn">到達圏をリセット</button>
         <button id="lockBtn" class="secondaryBtn" style="display: none;">到達圏を固定</button>
@@ -138,20 +154,24 @@
 
   <script src="https://unpkg.com/proj4@2.8.0/dist/proj4.js"></script>
   <script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
-  <!-- ローディング管理 -->
+  
+  <!-- 順序 1: ローディング管理 & ユーティリティ -->
   <script src="assets/loading-manager.js"></script>
-  <!-- ユーティリティ・アルゴリズム -->
   <script src="assets/utils.js"></script>
-  <script src="assets/dijkstra.js"></script>
-  <!-- 設定 -->
+  
+  <!-- 順序 2: 設定 -->
   <script src="assets/config.js"></script>
-  <!-- 機能モジュール -->
+  
+  <!-- 順序 3: アルゴリズム -->
+  <script src="assets/dijkstra.js"></script>
+  
+  <!-- 順序 4: 機能モジュール -->
   <script src="assets/isochrone-service.js"></script>
   <script src="assets/ui-controller.js"></script>
   <script src="assets/map-layers.js"></script>
-  <!-- レガシー（後方互換性） -->
-  <script src="assets/isochrone.js"></script>
-  <!-- メイン -->
+  <script src="assets/address-search.js"></script>
+  
+  <!-- 順序 5: メイン制御 -->
   <script src="assets/main.js"></script>
   <script>
     // 最終更新日を設定

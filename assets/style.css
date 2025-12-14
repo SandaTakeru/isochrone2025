@@ -184,14 +184,15 @@ body {
 /* Form Elements */
 .selectControl {
   width: 100%;
-  padding: 10px 12px;
+  padding: 14px 12px;
   border: 1px solid #d0d0d0;
   border-radius: 6px;
   font-family: inherit;
-  font-size: 0.95em;
+  font-size: 1.05em;
   background-color: #ffffff;
   color: #1a1a1a;
   transition: all 0.2s ease;
+  margin-bottom: 8px;
 }
 
 .selectControl:hover {
@@ -205,10 +206,204 @@ body {
   box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
 }
 
+/* 住所検索コンテナ */
+.addressSearchContainer {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.addressInput {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.95em;
+  color: #1a1a1a;
+  transition: all 0.2s ease;
+}
+
+.addressInput:hover {
+  border-color: #999;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.addressInput:focus {
+  outline: none;
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+}
+
+.addressSearchBtn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  background-color: #0066cc;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1.2em;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.addressSearchBtn:hover {
+  background-color: #0052a3;
+  box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
+}
+
+.addressSearchBtn:active {
+  transform: translateY(1px);
+}
+
+.addressSearchBtn:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 検索結果リスト */
+.addressSearchResults {
+  margin-top: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #ffffff;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.addressResult {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.addressResult:last-child {
+  border-bottom: none;
+}
+
+.addressResult:hover {
+  background-color: #f0f8ff;
+  color: #0066cc;
+}
+
+.addressResultName {
+  font-weight: 600;
+  display: block;
+}
+
+.addressResultDetails {
+  font-size: 0.85em;
+  color: #999;
+  margin-top: 2px;
+}
+
+/* Time Input Container */
+.timeInputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timeDisplayRow {
+  background: linear-gradient(135deg, #f0f8ff, #e8f4ff);
+  border: 2px solid #0066cc;
+  border-radius: 8px;
+  padding: 12px 14px;
+  text-align: center;
+}
+
+#timeDisplay {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #0066cc;
+  letter-spacing: 1px;
+  outline: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: text;
+  transition: background-color 0.2s;
+}
+
+#timeDisplay:hover {
+  background-color: rgba(0, 102, 204, 0.1);
+}
+
+#timeDisplay:focus {
+  background-color: rgba(0, 102, 204, 0.15);
+  box-shadow: inset 0 0 0 2px #0066cc;
+}
+
+.timeSlider {
+  width: 100%;
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #0066cc, #0052a3);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.timeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #0066cc;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.4);
+  transition: all 0.2s;
+  border: 2px solid white;
+}
+
+.timeSlider::-webkit-slider-thumb:hover {
+  width: 24px;
+  height: 24px;
+  box-shadow: 0 3px 10px rgba(0, 102, 204, 0.6);
+}
+
+.timeSlider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #0066cc;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 102, 204, 0.4);
+  border: 2px solid white;
+  transition: all 0.2s;
+}
+
+.timeSlider::-moz-range-thumb:hover {
+  width: 24px;
+  height: 24px;
+  box-shadow: 0 3px 10px rgba(0, 102, 204, 0.6);
+}
+
+.timeSlider::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
 /* Buttons */
 .buttonGroup {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
 }
 
@@ -216,7 +411,7 @@ body {
 .primaryBtn,
 .secondaryBtn,
 .warningBtn {
-  padding: 10px 14px;
+  padding: 10px 12px;
   border: none;
   border-radius: 6px;
   font-family: inherit;
@@ -224,7 +419,11 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .primaryBtn {
@@ -264,29 +463,6 @@ body {
 
 .warningBtn:active {
   transform: translateY(1px);
-}
-
-/* Origin Info */
-#originInfo {
-  background-color: #f0f8ff;
-  border: 1px solid #bde3ff;
-  border-radius: 6px;
-  padding: 12px !important;
-}
-
-.originText {
-  font-weight: 600;
-  font-family: 'Courier New', monospace;
-  font-size: 0.85em;
-  color: #333;
-  margin: 4px 0;
-  line-height: 1.4;
-}
-
-.originStation {
-  font-size: 0.85em;
-  color: #555;
-  margin-top: 4px;
 }
 
 /* Table */
@@ -778,6 +954,22 @@ body.loading #titleBar {
   color: #888;
   margin: 6px 0 0 0;
   font-style: italic;
+}
+
+/* ビーコン点滅アニメーション */
+@keyframes beaconFlash {
+  0% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 0.3;
+    filter: brightness(0.4);
+  }
+  100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
 }
 
 

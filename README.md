@@ -10,59 +10,68 @@ MaplibreGL を使用した到達圏（isochrone）可視化アプリケーショ
 
 ```
 assets/
-├── main.js                # メイン制御・アプリケーション初期化
-├── config.js              # 設定・定数管理（AppConfig）
-├── ui-controller.js       # UI操作・イベント管理（UIController）
-├── isochrone-service.js   # 到達圏計算ロジック（IsochroneService）
-├── map-layers.js          # MaplibreGL レイヤ管理（MapLayerManager）
-├── dijkstra.js            # Dijkstra最短経路アルゴリズム
-├── utils.js               # ユーティリティ関数
-└── style.css              # スタイル定義
+├── main.js                  # メイン制御・アプリケーション初期化
+├── config.js                # 設定・定数管理（AppConfig）
+├── ui-controller.js         # UI操作・イベント管理（UIController）
+├── isochrone-service.js     # 到達圏計算ロジック（IsochroneService）
+├── map-layers.js            # MaplibreGL レイヤ管理（MapLayerManager）
+├── dijkstra.js              # Dijkstra最短経路アルゴリズム（TinyQueue, dijkstraVirtualAdj）
+├── utils.js                 # ユーティリティ関数
+├── loading-manager.js       # ローディング状態管理（LoadingManager）
+├── address-search.js        # 住所検索機能（AddressSearch, AddressSearchUI）
+└── style.css                # スタイル定義
 
 geojson/
-├── station.geojson        # 駅位置データ（EPSG:3857）
-└── rail.geojson           # 鉄道線路データ（EPSG:3857）
+├── station.geojson          # 駅位置データ（EPSG:3857）
+└── rail.geojson             # 鉄道線路データ（EPSG:3857）
 
-railway_graph_final.json    # 鉄道グラフ（ノード/エッジ、コストは秒単位）
+railway_graph_final.json      # 鉄道グラフ（ノード/エッジ、コストは秒単位）
 ```
 
 ## アーキテクチャ
 
-### モジュール依存関係
+### スクリプト読み込み順序
 
 ```
 index.html
-  ↓
-外部ライブラリ（MaplibreGL, Turf.js, proj4.js）
-  ↓
-ユーティリティ（utils.js, dijkstra.js）
-  ↓
-設定（config.js）
-  ↓
-機能モジュール（isochrone-service.js, ui-controller.js, map-layers.js）
-  ↓
-メイン（main.js）
+  ├─ 外部ライブラリ（proj4.js, turf.js）
+  ├─ loading-manager.js      # ローディング管理・初期化
+  ├─ utils.js                # ユーティリティ関数
+  ├─ config.js               # 設定定義
+  ├─ dijkstra.js             # アルゴリズム
+  ├─ isochrone-service.js    # ロジック
+  ├─ ui-controller.js        # UI制御
+  ├─ map-layers.js           # レイヤ管理
+  ├─ address-search.js       # 住所検索
+  └─ main.js                 # メイン（IIFE で即座実行）
 ```
 
-### 機能モジュール分割
+依存関係を明確にし、上位層が下位層を参照する単一方向の依存です。
 
-| モジュール | 責務 | キー関数/クラス |
+### モジュール責務
+
+| モジュール | 役割 | キークラス/関数 |
 |-----------|------|-----------------|
-| **config.js** | 設定・定数の一元管理 | `AppConfig` オブジェクト |
-| **ui-controller.js** | UI操作・イベント処理 | `UIController` クラス |
-| **isochrone-service.js** | 到達圏計算ロジック | `IsochroneService` クラス |
+| **config.js** | 設定・定数管理 | `AppConfig` オブジェクト |
+| **utils.js** | ヘルパー関数 | `id()`, `fetchJson()`, `status()`, `colorRamp()` など |
+| **dijkstra.js** | グラフ計算 | `TinyQueue`, `dijkstraVirtualAdj()` |
+| **loading-manager.js** | ローディングUI | `LoadingManager` クラス |
+| **isochrone-service.js** | 到達圏計算 | `IsochroneService` クラス |
+| **ui-controller.js** | UI/イベント管理 | `UIController` クラス |
 | **map-layers.js** | マップレイヤ管理 | `MapLayerManager` クラス |
-| **dijkstra.js** | グラフアルゴリズム | `dijkstraVirtualAdj()`, `TinyQueue` |
-| **utils.js** | ユーティリティ | `id()`, `fetchJson()`, `status()`, `colorRamp()` など |
+| **address-search.js** | 住所検索 | `AddressSearch`, `AddressSearchUI` クラス |
+| **main.js** | 制御フロー | イベントハンドラ統合 |
 
 ### 初期化フロー
 
-1. `index.html` が複数のスクリプトを読み込む（依存順）
-2. `config.js` で設定をグローバルに定義
-3. `main.js` が IIFE で実行開始
-4. `UIController` でモバイルメニューを初期化
-5. `MaplibreGL` マップを初期化
-6. マップ読み込み完了後、`IsochroneService` で計算開始
+1. HTML読み込み → スクリプト順次実行
+2. `loading-manager.js`: グローバル `window.loadingManager` インスタンス作成
+3. `config.js`: グローバル `window.AppConfig` 定義
+4. `main.js`: IIFE で即座実行
+   - UIController初期化（モバイルメニュー）
+   - マップ初期化
+   - データ並列読み込み
+   - レイヤ・イベントハンドラ設定
 
 ## インストール・実行
 
@@ -84,77 +93,81 @@ http://localhost:8000/?debug=1
 
 ## 主要な設定
 
-`config.js` の `AppConfig` オブジェクトで以下を管理：
+`config.js` の `AppConfig` で管理：
 
-- **都市座標**: `cities` オブジェクト
-- **到達圏パラメータ**: `isochrone.walkKmh`, `stepMin`, `maxMin`
+- **都市座標**: `cities` — 都市名とズームレベル
+- **到達圏パラメータ**:
+  - `walkKmh`: 歩行速度（km/h、斜め方向に補正）
+  - `stepMin`: 時間ステップ間隔（分）
+  - `maxMin`: 最大到達時間（分）
 - **データURL**: `data.stations`, `data.rails`, `data.graph`
 - **MaplibreGL スタイル**: `mapStyle`
 
-新しい設定項目は `AppConfig` に追加するだけで、全モジュールから参照可能です。
-
 ## 外部ライブラリ
 
-- **MaplibreGL** — 地図表示
-- **Turf.js** — 地理空間計算
+- **MaplibreGL 5.0.0** — 地図表示・インタラクション
+- **Turf.js** — 地理空間計算（距離測定など）
 - **proj4.js** — 座標変換（EPSG:3857 ↔ WGS84）
 
 ## パフォーマンス最適化
 
-- Dijkstra計算時に最寄り駅を最大10個まで限定
-- 複数駅からのコストを統合して最小値を採用
-- ズームレベルに応じたレイヤ表示制御
-- マウスムーブイベントに throttle 処理を適用
+- **データ読み込み**: 大容量ファイル（graph, rails, stations）を並列読み込み
+- **キャッシング**: 小さいメタデータのみ localStorage でキャッシュ（1MB以下）
+- **Dijkstra最適化**: 最寄り駅最大10個から計算、複数駅結果をマージ
+- **イベント throttle**: マウスムーブを50ms間隔に制限
+- **レイヤ制御**: ズームレベルに応じて表示・非表示を自動切り替え
+
+## 主要な機能
+
+### 地図操作
+- **出発地点登録**: 地図クリック または 都市選択 または 住所検索
+- **到達時間設定**: スライダー（5分単位）または直接入力（contenteditable）
+- **到達圏固定**: 計算結果をロック状態で保持
+
+### 到達圏表示
+- **ヒートマップ**: 全ズームレベルで表示（残り時間を半径にマッピング）
+- **駅マーカー**: ズーム13以上で表示（駅タイプで色分け）
+- **コストラベル**: 駅の到達時間を分単位で表示
+
+### テーブル表示
+- **到達駅一覧**: 到達時間・駅名・路線・運営会社でソート可能
+- **行クリック**: 選択駅にマップをアニメーション移動
 
 ## 開発ガイド
 
-### モジュール詳細
-
-#### config.js
-アプリケーション設定の一元管理。すべての設定をここで定義し、他のモジュールからは `window.AppConfig` でアクセスします。
-
-#### ui-controller.js
-UI操作・ユーザーインタラクション管理。主要メソッド：
-- `initMobileMenu()` — モバイルメニュー開閉
-- `displayOriginInfo()` — 出発地点情報表示
-- `displayStationTable()` — 駅テーブル表示・更新
-- `setStationTableRowClickHandler()` — テーブル行のクリックハンドラ設定
-
-UI状態管理をカプセル化し、HTML操作を集中管理します。
-
-#### isochrone-service.js
-到達圏計算ロジック。Dijkstra アルゴリズムを使用して最短経路を計算し、到達可能エリアを算出します。
-
-#### map-layers.js
-MaplibreGL のレイヤ管理。レイヤの追加・更新・削除を統一的に処理します。
-
 ### 新機能追加時
 
-1. **UI関連**: `ui-controller.js` にメソッド追加
+1. **UI 変更**: `ui-controller.js` にメソッド追加
 2. **計算処理**: `isochrone-service.js` にメソッド追加
-3. **レイヤ管理**: `map-layers.js` にメソッド追加
+3. **レイヤ追加**: `map-layers.js` にメソッド追加
 4. **設定変更**: `config.js` の `AppConfig` を更新
 
-すべてのモジュールは独立しており、影響範囲を最小化できます。
-
-例：最大到達時間を120分から180分に変更
+例：最大到達時間を180分に変更
 
 ```javascript
 // config.js
-isochrone: {
-  maxMin: 180,  // 180分に変更
-  // ...
+const AppConfig = {
+  isochrone: {
+    maxMin: 180,  // 180分に変更
+    // ...
+  }
 }
 ```
 
-## 後方互換性
+### デバッグのコツ
 
-`isochrone.js` は従来の `IsochroneCalculator` クラスを保持していますが、新しいコードでは `isochrone-service.js` の `IsochroneService` を使用してください。
-- Turf の `union` は複雑なポリゴンの結合で失敗することがあります（ブラウザ側の計算コストも高くなります）。大きな範囲や多数の駅を処理する場合はサーバ側で事前に集約することを推奨します。
+- `?debug=1` でコンソール詳細ログ有効化
+- `window.AppConfig` でアプリ設定確認
+- `window.map` でMaplibreGLインスタンス確認
+- Dijkstra計算結果は `[DEBUG] Computed costs to stations` テーブルで表示
 
-今後の改善案
-- 乗換待ちや列車ダイヤを反映する（グラフのエッジに時間帯情報を付与）
-- 出発地点→駅を単に徒歩とせず、経路（道路ネットワーク）での接続を行う
-- UI の改良（時間レンジスライダー、色・レイヤー切替）
+## 今後の改善案
 
-質問や追加要望があれば教えてください。
+- 乗換待ち時間を反映（グラフのエッジに時間帯情報を付与）
+- 経路API（OSRM など）で出発地点→駅の実際の道順を計算
+- UI改良（時間レンジスライダー、色パレット選択）
+- オフライン対応（Service Worker）
+
+## ライセンス
+
+データは国土地理院の提供するベクトルタイルを使用しています。詳細は [国土地理院](https://maps.gsi.go.jp/) を参照してください。

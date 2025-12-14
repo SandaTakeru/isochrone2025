@@ -60,34 +60,7 @@ class UIController {
     });
   }
 
-  /**
-   * 出発地点マーカー情報を表示
-   */
-  displayOriginInfo(originLonLat) {
-    const originInfoEl = id('originInfo');
-    const originCoordsEl = id('originCoords');
-    const originStationEl = id('originStation');
-    
-    if(originInfoEl && originCoordsEl && originStationEl) {
-      originInfoEl.style.display = 'block';
-      originCoordsEl.textContent = `[${originLonLat[1].toFixed(6)}, ${originLonLat[0].toFixed(6)}]`;
-      originStationEl.textContent = '';
-    }
-  }
 
-  /**
-   * 出発地点情報をリセット
-   */
-  clearOriginInfo() {
-    const originInfoEl = id('originInfo');
-    if(originInfoEl) {
-      originInfoEl.style.display = 'none';
-      const originCoordsEl = id('originCoords');
-      const originStationEl = id('originStation');
-      if(originCoordsEl) originCoordsEl.textContent = '';
-      if(originStationEl) originStationEl.textContent = '';
-    }
-  }
 
   /**
    * 駅テーブルを表示・更新

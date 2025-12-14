@@ -60,11 +60,16 @@ class IsochroneService {
    * @param {Map} nodes - ノード情報
    * @param {Array} nearestStations - 最寄り駅リスト
    * @param {number} walkSpeed - 歩行速度（m/s）
+   * @param {number} maxSeconds - 最大時間（秒）。省略時はthis.maxMin * 60を使用
    * @returns {Object} マージされたコスト
    */
-  computeMergedCosts(adj, nodes, nearestStations, walkSpeed) {
+  computeMergedCosts(adj, nodes, nearestStations, walkSpeed, maxSeconds) {
+    // maxSecondsが指定されていない場合、デフォルト値を使用
+    if(maxSeconds === undefined) {
+      maxSeconds = this.maxMin * 60;
+    }
+    
     const mergedCosts = {};
-    const maxSeconds = this.maxMin * 60;
     
     for(const candidate of nearestStations) {
       const { nodeId, distM } = candidate;
@@ -90,11 +95,19 @@ class IsochroneService {
 
   /**
    * 到達圏フィーチャを生成
+   * @param {Object} costs - コスト情報
+   * @param {Object} stations - 駅情報
+   * @param {number} maxMinutes - 最大時間（分）。省略時はthis.maxMinを使用
    */
-  generateIsochroneFeatures(costs, stations) {
-    const colors = colorRamp(Math.ceil(this.maxMin / this.stepMin));
+  generateIsochroneFeatures(costs, stations, maxMinutes) {
+    // maxMinutesが指定されていない場合、デフォルト値を使用
+    if(maxMinutes === undefined) {
+      maxMinutes = this.maxMin;
+    }
+    
+    const colors = colorRamp(Math.ceil(maxMinutes / this.stepMin));
     const allIsochroneFeatures = [];
-    const maxSeconds = this.maxMin * 60;
+    const maxSeconds = maxMinutes * 60;
     
     for(const sid in stations) {
       const sidNum = Number(sid);
