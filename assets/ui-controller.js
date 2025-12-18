@@ -224,22 +224,6 @@ class UIController {
   }
 
   /**
-   * ロック・アンロックボタンの表示状態を更新
-   */
-  setLockButtonsVisibility(isLocked) {
-    const lockBtn = id('lockBtn');
-    const unlockBtn = id('unlockBtn');
-    
-    if(isLocked) {
-      if(lockBtn) lockBtn.style.display = 'none';
-      if(unlockBtn) unlockBtn.style.display = 'inline-block';
-    } else {
-      if(lockBtn) lockBtn.style.display = 'inline-block';
-      if(unlockBtn) unlockBtn.style.display = 'none';
-    }
-  }
-
-  /**
    * 駅テーブルの行にクリックイベントハンドラを設定
    */
   setStationTableRowClickHandler(callback) {

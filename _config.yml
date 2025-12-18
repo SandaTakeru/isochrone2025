@@ -8,12 +8,8 @@ plugins: []
 
 # Build settings
 exclude:
-  - README.md
-  - OPTIMIZATION_REPORT.md
-  - OPTIMIZATION_IMPLEMENTATION.md
-  - NGINX_COMPRESSION_CONFIG.conf
-  - verify_optimization.sh
-  - .htaccess
+  - _dev/                         # 開発用参考ファイル
+  - NGINX_COMPRESSION_CONFIG.conf # 本番環境Nginx設定
 
 # Asset processing
 sass:
@@ -30,9 +26,9 @@ compress_html:
 
 # GitHub Pages will automatically gzip these files
 include:
-  - .htaccess
   - railway_graph_final.json
   - geojson
+  - assets
 
 # Disable Jekyll processing for specific files
 keep_files:

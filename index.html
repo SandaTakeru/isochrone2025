@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <!-- GitHub Pages キャッシュ制御 -->
   <meta http-equiv="Cache-Control" content="public, max-age=3600">
-  <title>到達圏マップ (Rail Isochrone)</title>
+  <title>くろのまっぷ｜鉄道到達圏地図</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link href="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.js"></script>
@@ -22,19 +22,18 @@
       </span>
     </button>
     <div class="mobileTitleContainer">
-      <h1 id="mobileTitle">鉄道到達圏マップ</h1>
+      <h1 id="mobileTitle">くろのまっぷ｜鉄道到達圏地図</h1>
       <span class="betaBadgeMobile">BETA</span>
     </div>
-    <div id="mobileLastUpdate" class="mobileLastUpdated"></div>
   </div>
 
   <div id="controls">
     <div id="controlsHeader">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <h1>鉄道到達圏マップ</h1>
+        <h1>くろのまっぷ｜<br/>鉄道到達圏地図</h1>
         <span class="betaBadge">BETA</span>
       </div>
-      <p class="headerDescription">時間内に到達可能なエリアを表示します。地図上で出発地点を指定してください。速度条件など、詳しくはこちら。</p>
+      <p class="headerDescription">一定時間内に鉄道で移動できるエリアを表示します。地図上で出発地点を指定してください。速度条件など、詳しくはこちら。</p>
       <p class="lastUpdated">最終更新: <span id="lastUpdateDate"></span></p>
     </div>
 
@@ -66,24 +65,17 @@
 
     <!-- セクション2: 解析時間設定 -->
     <div class="controlSection">
-      <div class="sectionLabel">⏱️ 到達時間（最大12時間）</div>
+      <div class="sectionLabel">⏱️ 到達時間（10分～12時間）</div>
       <div class="timeInputContainer">
         <div class="timeDisplayRow">
-          <span id="timeDisplay" class="timeDisplayEditable" contenteditable="true">1時間</span>
+          <button id="timeDecreaseBtn" class="timeAdjustBtn timeDecrease" aria-label="時間を減らす" title="1分減らす">◀</button>
+          <span id="timeDisplay" class="timeDisplay">1時間</span>
+          <button id="timeIncreaseBtn" class="timeAdjustBtn timeIncrease" aria-label="時間を増やす" title="1分増やす">▶</button>
         </div>
 
-        <input type="range" id="timeSlider" class="timeSlider" min="1" max="144" value="12" step="1">
+        <input type="range" id="timeSlider" class="timeSlider" min="1" max="72" value="6" step="1">
       </div>
-    </div>
-
-    <!-- セクション3: アクション -->
-    <div class="controlSection">
-      <div class="sectionLabel">⚙️ 到達圏の設定</div>
-      <div class="buttonGroup">
-        <button id="resetBtn" class="primaryBtn">到達圏をリセット</button>
-        <button id="lockBtn" class="secondaryBtn" style="display: none;">到達圏を固定</button>
-        <button id="unlockBtn" class="warningBtn" style="display: none;">固定を解除</button>
-      </div>
+      <button id="shareBtn" class="shareBtn" title="現在の設定をURLでコピー" style="width: 100%; margin-top: 10px; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">くろのまっぷを共有</button>
     </div>
 
     <!-- セクション4: 到達駅一覧 -->
@@ -170,6 +162,9 @@
   <script src="assets/ui-controller.js"></script>
   <script src="assets/map-layers.js"></script>
   <script src="assets/address-search.js"></script>
+  
+  <!-- Web メルカトル補正 -->
+  <script src="assets/mercator-correction.js"></script>
   
   <!-- 順序 5: メイン制御 -->
   <script src="assets/main.js"></script>

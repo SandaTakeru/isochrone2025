@@ -83,3 +83,47 @@ function dijkstraVirtualAdj(adj, nodes, stationInitial) {
 
   return dist;
 }
+
+/**
+ * 複数開始地点から1回のDijkstraで全ノードへの最短距離を計算
+ * 個別に複数回実行するより効率的
+ * @param {Map} adj - 隣接リスト
+ * @param {Map} nodes - ノード情報
+ * @param {Array} sources - [{nodeId, initialCost}, ...] の配列
+ * @returns {Object} マージされたコスト {nodeId: minCost, ...}
+ */
+function dijkstraMultiSource(adj, nodes, sources) {
+  const dist = {};
+  const visited = new Set();
+  const pq = new TinyQueue();
+
+  // 全ノード初期化
+  for(const [id] of nodes) {
+    dist[id] = Infinity;
+  }
+
+  // 複数開始点を同時にキューに追加
+  for(const {nodeId, initialCost} of sources) {
+    if(dist[nodeId] === undefined) continue;
+    dist[nodeId] = initialCost;
+    pq.push({node: nodeId, dist: initialCost});
+  }
+
+  // 標準的なDijkstra処理（複数開始点対応）
+  while(pq.length > 0) {
+    const {node: u, dist: du} = pq.pop();
+    if(visited.has(u)) continue;
+    visited.add(u);
+
+    if(!adj.has(u)) continue;
+    for(const {to: v, cost: c} of adj.get(u)) {
+      const dv = du + c;
+      if(dv < dist[v]) {
+        dist[v] = dv;
+        pq.push({node: v, dist: dv});
+      }
+    }
+  }
+
+  return dist;
+}

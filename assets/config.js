@@ -30,7 +30,7 @@ const AppConfig = {
 
   // === 到達圏計算設定 ===
   isochrone: {
-    walkKmh: 4.8 / Math.sqrt(2),  // 歩行速度（km/h）
+    walkKmh: 3.6,  // 歩行速度（km/h）
     stepMin: 5,                     // ステップ間隔（分）
     maxMin: 120,                    // 最大到達時間（分）
     nearestStationsMax: 10          // 計算用の最寄り駅数

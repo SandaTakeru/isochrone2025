@@ -1,0 +1,1247 @@
+{
+  "type": "FeatureCollection",
+  "name": "airport",
+  "crs": {
+    "type": "name",
+    "properties": {
+      "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "礼文空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.03835,
+          45.45546
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "稚内空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.80104,
+          45.40419
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "利尻空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.18459,
+          45.24303
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "帯広空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          143.21619,
+          42.73256
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "釧路空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          144.1937,
+          43.04315
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "中標津空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          144.95772,
+          43.57661
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "弟子屈空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          144.43457,
+          43.48007
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "女満別空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          144.16158,
+          43.87985
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "紋別空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          143.40399,
+          44.30485
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "旭川空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          142.45134,
+          43.66882
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "新千歳空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.68239,
+          42.78679
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "丘珠飛行場"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.38133,
+          43.11655
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "函館空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.82486,
+          41.76997
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "奥尻空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.43714,
+          42.0686
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "青森空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.68891,
+          40.73408
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "三沢空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.37792,
+          40.7011
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "大館能代空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.36711,
+          40.1934
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "秋田空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.21928,
+          39.61462
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "花巻空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          141.13424,
+          39.42702
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "庄内空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.78956,
+          38.81282
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "山形空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.36974,
+          38.41071
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "仙台空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.91295,
+          38.13842
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "福島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.43061,
+          37.22794
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "調布飛行場"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5295,
+          35.67093
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "東京国際空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.77599,
+          35.55175
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "神津島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.13177,
+          34.18999
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "大島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.36233,
+          34.78253
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "新島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.26888,
+          34.36953
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "三宅島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.55941,
+          34.07231
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "八丈島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.78457,
+          33.11515
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "名古屋空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.92482,
+          35.25531
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "中部国際空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.81332,
+          34.85847
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "八尾飛行場"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.59652,
+          34.59719
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "関西国際空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.23476,
+          34.42598
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "南紀白浜空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.36323,
+          33.66202
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "新潟空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.11359,
+          37.95449
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "佐渡空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          138.4097,
+          38.06102
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "長崎空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.91539,
+          32.91788
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "壱岐空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.78565,
+          33.74896
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "対馬空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.33086,
+          34.28462
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "小値賀空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.0899,
+          33.1906
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "上五島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.1924,
+          33.01327
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "福江空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.83333,
+          32.66694
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "天草飛行場"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.1592,
+          32.48209
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "鹿児島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.71732,
+          31.80395
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "枕崎飛行場"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.35611,
+          31.26653
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "種子島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.95182,
+          30.54543
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "屋久島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.65767,
+          30.38684
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "熊本空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.85787,
+          32.83723
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "宮崎空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          131.44799,
+          31.87668
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "大分県央飛行場"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          131.5047,
+          33.02658
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "大分空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          131.73593,
+          33.47971
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "高知空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          133.67214,
+          33.54647
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "松山空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.70113,
+          33.82731
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "高松空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          134.01804,
+          34.21502
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "徳島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          134.60013,
+          34.13425
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "奄美空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.71079,
+          28.43174
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "沖永良部空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.70327,
+          27.42865
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "与論空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.40117,
+          27.04383
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "北大東空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          131.32588,
+          25.94397
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "南大東空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          131.26439,
+          25.84612
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "伊江島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.78656,
+          26.72247
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "久米島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          126.71608,
+          26.36458
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "宮古空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          125.2963,
+          24.78294
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "下地島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          125.14657,
+          24.82416
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "石垣空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          124.18597,
+          24.34492
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "波照間空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          123.8052,
+          24.05963
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "与那国空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          122.97993,
+          24.46717
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "成田国際空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          140.3834,
+          35.77191
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "新多良間空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          124.67642,
+          24.65379
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "松本空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          137.92494,
+          36.16491
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "能登空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.9624,
+          37.29357
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "富山空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          137.1874,
+          36.64917
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "小松空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.41142,
+          36.39359
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "福井空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          136.2239,
+          36.14536
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "但馬空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          134.78688,
+          35.51331
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "鳥取空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          134.16635,
+          35.52906
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "岡山空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          133.85389,
+          34.75622
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "岡南飛行場"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          133.93752,
+          34.59139
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "隠岐空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          133.32646,
+          36.18144
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "米子空港（美保）"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          133.24102,
+          35.49293
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "出雲空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.88792,
+          35.41321
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "広島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.91954,
+          34.43775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "石見空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          131.7918,
+          34.67621
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "広島西飛行場"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          132.41311,
+          34.36587
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "山口宇部空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          131.27465,
+          33.92914
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "北九州空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.94355,
+          33.83641
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "福岡空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.44855,
+          33.58479
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "佐賀空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          130.29913,
+          33.1508
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "徳之島空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          128.88099,
+          27.83514
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "喜界空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          129.92979,
+          28.32217
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "慶良間空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.29306,
+          26.16712
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "那覇空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.6428,
+          26.19925
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "粟国空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          127.23983,
+          26.59293
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "n": "大阪国際空港"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          135.43898,
+          34.78402
+        ]
+      }
+    }
+  ]
+}
