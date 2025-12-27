@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <!-- GitHub Pages キャッシュ制御 -->
   <meta http-equiv="Cache-Control" content="public, max-age=3600">
-  <title>くろのまっぷ｜鉄道到達圏地図</title>
+  <title>くろのまっぷ2025 - 鉄道到達圏地図</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link href="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@5.0.0/dist/maplibre-gl.js"></script>
@@ -22,65 +22,161 @@
       </span>
     </button>
     <div class="mobileTitleContainer">
-      <h1 id="mobileTitle">くろのまっぷ｜鉄道到達圏地図</h1>
-      <span class="betaBadgeMobile">BETA</span>
+      <h1 id="mobileTitle">くろのまっぷ2025 - 鉄道到達圏地図</h1>
     </div>
   </div>
 
   <div id="controls">
     <div id="controlsHeader">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <h1>くろのまっぷ｜<br/>鉄道到達圏地図</h1>
-        <span class="betaBadge">BETA</span>
+        <h1><span>くろのまっぷ2025 - </span><span>鉄道到達圏地図</span></h1>
       </div>
-      <p class="headerDescription">一定時間内に鉄道で移動できるエリアを表示します。地図上で出発地点を指定してください。速度条件など、詳しくはこちら。</p>
-      <p class="lastUpdated">最終更新: <span id="lastUpdateDate"></span></p>
+      <p class="headerDescription">鉄道で移動可能なエリアを表示します。</p>
     </div>
 
     <!-- セクション1: 位置検索 -->
     <div class="controlSection">
-      <div class="sectionLabel">🏙️ 都市選択</div>
+      <div class="sectionLabel">🚂 駅選択　🔍 住所検索</div>
       <select id="citySelect" class="selectControl">
-        <option value="">-- 都市を選択 --</option>
-        <option value="sapporo">札幌市</option>
-        <option value="sendai">仙台市</option>
-        <option value="tokyo">東京都</option>
-        <option value="yokohama">横浜市</option>
-        <option value="nagoya">名古屋市</option>
-        <option value="osaka">大阪市</option>
-        <option value="kobe">神戸市</option>
-        <option value="kyoto">京都市</option>
-        <option value="fukuoka">福岡市</option>
+        <option value="">-- 主要都市から選択 --</option>
+        <option value="sapporo">札幌駅</option>
+        <option value="sendai">仙台駅</option>
+        <option value="tokyo">東京駅</option>
+        <option value="yokohama">横浜駅</option>
+        <option value="nagoya">名古屋駅</option>
+        <option value="osaka">大阪駅</option>
+        <option value="kobe">三宮駅</option>
+        <option value="kyoto">京都駅</option>
+        <option value="fukuoka">博多駅</option>
       </select>
-    </div>
 
-    <div class="controlSection">
-      <div class="sectionLabel">🔍 住所検索</div>
-      <div class="addressSearchContainer">
+      <div class="addressSearchContainer addressSearchWithTooltip">
         <input type="text" id="addressInput" class="addressInput" placeholder="住所を入力してください" aria-label="住所入力欄">
         <button id="addressSearchBtn" class="addressSearchBtn" aria-label="検索">🔍住所検索</button>
+        <div class="searchTooltip">
+          <div class="tooltipContent">住所検索は <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Nominatim</a>を使用しています。<br>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a></div>
+        </div>
       </div>
       <div id="addressSearchResults" class="addressSearchResults" style="display: none;"></div>
     </div>
 
     <!-- セクション2: 解析時間設定 -->
     <div class="controlSection">
-      <div class="sectionLabel">⏱️ 到達時間（10分～12時間）</div>
+      <div class="sectionLabel">⏱️ 到達時間（5分～12時間）</div>
       <div class="timeInputContainer">
-        <div class="timeDisplayRow">
-          <button id="timeDecreaseBtn" class="timeAdjustBtn timeDecrease" aria-label="時間を減らす" title="1分減らす">◀</button>
-          <span id="timeDisplay" class="timeDisplay">1時間</span>
-          <button id="timeIncreaseBtn" class="timeAdjustBtn timeIncrease" aria-label="時間を増やす" title="1分増やす">▶</button>
+        <div class="timeSelectRow">
+          <div class="timeSelectGroup">
+            <select id="hourSelect" class="timeSelect">
+              <option value="0">0時間</option>
+              <option value="1" selected>1時間</option>
+              <option value="2">2時間</option>
+              <option value="3">3時間</option>
+              <option value="4">4時間</option>
+              <option value="5">5時間</option>
+              <option value="6">6時間</option>
+              <option value="7">7時間</option>
+              <option value="8">8時間</option>
+              <option value="9">9時間</option>
+              <option value="10">10時間</option>
+              <option value="11">11時間</option>
+              <option value="12">12時間</option>
+            </select>
+          </div>
+          <div class="timeSeparator">:</div>
+          <div class="timeSelectGroup">
+            <select id="minuteSelect" class="timeSelect">
+              <option value="0" selected>00分</option>
+              <option value="1">01分</option>
+              <option value="2">02分</option>
+              <option value="3">03分</option>
+              <option value="4">04分</option>
+              <option value="5">05分</option>
+              <option value="6">06分</option>
+              <option value="7">07分</option>
+              <option value="8">08分</option>
+              <option value="9">09分</option>
+              <option value="10">10分</option>
+              <option value="11">11分</option>
+              <option value="12">12分</option>
+              <option value="13">13分</option>
+              <option value="14">14分</option>
+              <option value="15">15分</option>
+              <option value="16">16分</option>
+              <option value="17">17分</option>
+              <option value="18">18分</option>
+              <option value="19">19分</option>
+              <option value="20">20分</option>
+              <option value="21">21分</option>
+              <option value="22">22分</option>
+              <option value="23">23分</option>
+              <option value="24">24分</option>
+              <option value="25">25分</option>
+              <option value="26">26分</option>
+              <option value="27">27分</option>
+              <option value="28">28分</option>
+              <option value="29">29分</option>
+              <option value="30">30分</option>
+              <option value="31">31分</option>
+              <option value="32">32分</option>
+              <option value="33">33分</option>
+              <option value="34">34分</option>
+              <option value="35">35分</option>
+              <option value="36">36分</option>
+              <option value="37">37分</option>
+              <option value="38">38分</option>
+              <option value="39">39分</option>
+              <option value="40">40分</option>
+              <option value="41">41分</option>
+              <option value="42">42分</option>
+              <option value="43">43分</option>
+              <option value="44">44分</option>
+              <option value="45">45分</option>
+              <option value="46">46分</option>
+              <option value="47">47分</option>
+              <option value="48">48分</option>
+              <option value="49">49分</option>
+              <option value="50">50分</option>
+              <option value="51">51分</option>
+              <option value="52">52分</option>
+              <option value="53">53分</option>
+              <option value="54">54分</option>
+              <option value="55">55分</option>
+              <option value="56">56分</option>
+              <option value="57">57分</option>
+              <option value="58">58分</option>
+              <option value="59">59分</option>
+            </select>
+          </div>
         </div>
-
-        <input type="range" id="timeSlider" class="timeSlider" min="1" max="72" value="6" step="1">
       </div>
-      <button id="shareBtn" class="shareBtn" title="現在の設定をURLでコピー" style="width: 100%; margin-top: 10px; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">くろのまっぷを共有</button>
+    </div>
+
+    <div class="controlSection">
+      <div class="sectionLabel">🔗 リンクを共有</div>
+        <button id="shareBtn" class="shareBtn primaryBtn" title="現在の設定をURLでコピー" style="width: 100%;">くろのまっぷを共有</button>
+    </div>
+
+    <!-- セクション3: ヒートマップグラデーション表示設定 -->
+    <div class="controlSection">
+      <div class="sectionLabel">🎨 表示切替</div>
+      <div class="heatmapGradientContainer" style="display: flex; flex-direction: column; gap: 8px;">
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="radio" id="gradientPositive" name="heatmapGradient" value="positive" checked style="cursor: pointer;">
+          <span>ポジティブ（圏内；グリーン）</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="radio" id="gradientNegative" name="heatmapGradient" value="negative" style="cursor: pointer;">
+          <span>ネガティブ（圏外；グレー）</span>
+        </label>
+      </div>
     </div>
 
     <!-- セクション4: 到達駅一覧 -->
     <div id="stationTable" class="controlSection" style="display: none;">
-      <div class="sectionLabel">🚉 到達駅一覧（<span id="totalCount">0</span>件）</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+        <div class="sectionLabel" style="margin: 0;">🚉 到達駅一覧（<span id="totalCount">0</span>件）</div>
+        <button id="copyStationListBtn" class="copyStationListBtn primaryBtn" title="駅一覧をコピー" style="padding: 8px 12px; flex-shrink: 0; white-space: nowrap;">📋 コピー</button>
+      </div>
       <div id="tableContainer" class="tableContainer">
         <table class="stationTable">
           <thead>
@@ -124,7 +220,17 @@
       </div>
     </div>
 
-    <!-- セクション6: ステータス -->
+    <!-- セクション6: ポリシー -->
+    <div class="controlSection">
+      <div class="sectionLabel">⚠️ ご利用にあたって</div>
+      <p class="policyText">
+        本サービスは到達時間の目安を示すものであり、結果の正確性を保証するものではありません。
+        ご利用は自己責任でお願いします。
+        計算方法の詳細は<a href="https://example.com/calculation-method" target="_blank">こちら。</a>
+    <p class="lastUpdated">最終更新: <span id="lastUpdateDate"></span></p>
+    </div>
+
+    <!-- セクション7: ステータス -->
     <div class="controlSection statusSection">
       <div id="status" class="statusText"></div>
       <div class="zoomInfo">Zoom: <span id="zoomLevel">-</span></div>
@@ -169,13 +275,16 @@
   <!-- 順序 5: メイン制御 -->
   <script src="assets/main.js"></script>
   <script>
-    // 最終更新日を設定
+    // 最終更新日を設定（開発者が以下の日付を変更してください）
+    const LAST_UPDATE_DATE = '2025-12-27'; // YYYY-MM-DD 形式で任意の日付を設定
+    
+    function formatDate(dateStr) {
+      const [year, month, day] = dateStr.split('-');
+      return `${year}年${month}月${day}日`;
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, '0');
-      const day = String(today.getDate()).padStart(2, '0');
-      const dateStr = `${year}年${month}月${day}日`;
+      const dateStr = formatDate(LAST_UPDATE_DATE);
       
       // PC版
       document.getElementById('lastUpdateDate').textContent = dateStr;

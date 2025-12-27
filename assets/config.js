@@ -8,7 +8,7 @@
 const AppConfig = {
   // === マップ設定 ===
   map: {
-    initialCity: 'sapporo',
+    initialCity: 'tokyo',
     minZoom: 8,
     maxZoom: 16,
     // 日本の東西南北 BBOX（北方領土を含む） [西, 南, 東, 北]
@@ -17,15 +17,15 @@ const AppConfig = {
 
   // === 都市座標 ===
   cities: {
-    sapporo: {name: '札幌市（北海道庁）', lat: 43.0645, lon: 141.3469, zoom: 13},
-    sendai: {name: '仙台市（宮城県庁）', lat: 38.2699, lon: 140.8720, zoom: 13},
-    tokyo: {name: '東京都（東京都庁）', lat: 35.6895, lon: 139.6917, zoom: 12},
-    yokohama: {name: '横浜市（神奈川県庁）', lat: 35.4456, lon: 139.6386, zoom: 13},
-    nagoya: {name: '名古屋市（愛知県庁）', lat: 35.1803, lon: 136.9066, zoom: 13},
-    osaka: {name: '大阪市（大阪府庁）', lat: 34.6869, lon: 135.5203, zoom: 13},
-    kobe: {name: '神戸市（兵庫県庁）', lat: 34.6728, lon: 135.1826, zoom: 13},
-    kyoto: {name: '京都市（京都府庁）', lat: 35.0113, lon: 135.7585, zoom: 13},
-    fukuoka: {name: '福岡市（福岡県庁）', lat: 33.5841, lon: 130.4008, zoom: 13}
+    sapporo: {name: '札幌駅', lat: 43.0676, lon: 141.3511, zoom: 13},
+    sendai: {name: '仙台駅', lat: 38.2605, lon: 140.8816, zoom: 13},
+    tokyo: {name: '東京駅', lat: 35.6815, lon: 139.7654, zoom: 12},
+    yokohama: {name: '横浜駅', lat: 35.4658, lon: 139.6213, zoom: 13},
+    nagoya: {name: '名古屋駅', lat: 35.1710, lon: 136.8831, zoom: 13},
+    osaka: {name: '大阪駅', lat: 34.7024, lon: 135.4960, zoom: 13},
+    kobe: {name: '三宮駅', lat: 34.6946, lon: 135.1941, zoom: 13},
+    kyoto: {name: '京都駅', lat: 34.9860, lon: 135.7590, zoom: 13},
+    fukuoka: {name: '博多駅', lat: 33.5899, lon: 130.4195, zoom: 13}
   },
 
   // === 到達圏計算設定 ===
@@ -40,7 +40,7 @@ const AppConfig = {
   data: {
     stations: './geojson/station.geojson',
     rails: './geojson/rail.geojson',
-    graph: './railway_graph_final.json'
+    graph: './station_graph.json'
   },
 
   // === MaplibreGL スタイル ===
@@ -52,16 +52,16 @@ const AppConfig = {
       'gsi-vector': {
         type: 'vector',
         tiles: ['https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf'],
-        minzoom: 4,
+        minzoom: 8,
         maxzoom: 16,
-        attribution: '<a href="https://maps.gsi.go.jp/" target="_blank">国土地理院</a>'
+        attribution: '<a href="https://maps.gsi.go.jp/development/vt_expt.html" target="_blank">GSI実験的ベクトルタイル</a> | <a href="https://nlftp.mlit.go.jp" target="_blank">国土数値情報</a>を加工して作成'
       }
     },
     layers: [
       {
         id: 'background',
         type: 'background',
-        paint: { 'background-color': '#f5f5f0' }
+        paint: { 'background-color': '#f0ebe3' }
       },
       {
         id: 'waterarea',

@@ -10,6 +10,122 @@ class UIController {
     this.currentSortColumn = 'cost_seconds';
     this.currentSortOrder = 'asc';
     this.allStationFeatures = [];
+    this.layerManager = null;
+    this.onGradientChange = null;  // グラデーション変更時のコールバック関数
+  }
+
+  /**
+   * UIコントローラーの初期化
+   */
+  setLayerManager(layerManager) {
+    this.layerManager = layerManager;
+  }
+
+  /**
+   * グラデーション変更時のコールバック関数を設定
+   */
+  setOnGradientChange(callback) {
+    this.onGradientChange = callback;
+  }
+
+  /**
+   * ヒートマップグラデーション選択UIの初期化
+   */
+  initHeatmapGradientUI() {
+    const positiveRadio = document.getElementById('gradientPositive');
+    const negativeRadio = document.getElementById('gradientNegative');
+
+    if (!positiveRadio || !negativeRadio) return;
+
+    const handleGradientChange = (event) => {
+      const gradientType = event.target.value;
+      if (this.layerManager) {
+        this.layerManager.switchHeatmapGradient(gradientType);
+      }
+      // コールバック関数があれば実行（URLの更新など）
+      if (this.onGradientChange) {
+        this.onGradientChange(gradientType);
+      }
+    };
+
+    positiveRadio.addEventListener('change', handleGradientChange);
+    negativeRadio.addEventListener('change', handleGradientChange);
+  }
+
+  /**
+   * 駅一覧コピーボタンの初期化
+   */
+  initCopyStationListButton() {
+    const copyBtn = document.getElementById('copyStationListBtn');
+    if (!copyBtn) return;
+
+    copyBtn.addEventListener('click', () => {
+      if (!copyBtn.disabled && !copyBtn.classList.contains('disabled')) {
+        this.copyStationListToClipboard();
+      }
+    });
+  }
+
+  /**
+   * 駅一覧をクリップボードにコピー
+   */
+  copyStationListToClipboard() {
+    const tableBody = document.getElementById('stationTableBody');
+    if (!tableBody || this.allStationFeatures.length === 0) {
+      alert('駅一覧がありません');
+      return;
+    }
+
+    // テーブルから駅データを抽出
+    const rows = tableBody.querySelectorAll('tr');
+    let csvText = '駅名\t到達時間\t運営会社\t路線名\n';
+
+    rows.forEach(row => {
+      const cells = row.querySelectorAll('td');
+      const stationName = cells[0]?.textContent || '';
+      const time = cells[1]?.textContent || '';
+      const company = cells[2]?.textContent || '';
+      const line = cells[3]?.textContent || '';
+
+      csvText += `${stationName}\t${time}\t${company}\t${line}\n`;
+    });
+
+    // クリップボードにコピー
+    navigator.clipboard.writeText(csvText).then(() => {
+      // フィードバック表示
+      const copyBtn = document.getElementById('copyStationListBtn');
+      const originalText = copyBtn.textContent;
+
+      copyBtn.textContent = '✓ コピー完了';
+      copyBtn.className = 'copyStationListBtn primaryBtn';
+
+      setTimeout(() => {
+        copyBtn.textContent = originalText;
+        // 青色のままにするためprimaryBtnクラスを保持
+      }, 2000);
+    }).catch(err => {
+      console.error('[Error] クリップボードへのコピーに失敗:', err);
+      alert('コピーに失敗しました');
+    });
+  }
+
+  /**
+   * コピーボタンを初期状態にリセット
+   */
+  resetCopyStationListBtn() {
+    const copyBtn = document.getElementById('copyStationListBtn');
+    if (copyBtn) {
+      copyBtn.textContent = '📋 コピー';
+      copyBtn.className = 'copyStationListBtn primaryBtn';
+      // 駅がない場合は無効化
+      if (this.allStationFeatures.length === 0) {
+        copyBtn.disabled = true;
+        copyBtn.classList.add('disabled');
+      } else {
+        copyBtn.disabled = false;
+        copyBtn.classList.remove('disabled');
+      }
+    }
   }
 
   /**
@@ -72,6 +188,18 @@ class UIController {
     
     this.renderStationTable();
     this.setupHeaderClickHandlers();
+    
+    // ボタンの無効化・有効化処理
+    const copyBtn = document.getElementById('copyStationListBtn');
+    if (copyBtn) {
+      if (allIsochroneFeatures.length === 0) {
+        copyBtn.disabled = true;
+        copyBtn.classList.add('disabled');
+      } else {
+        copyBtn.disabled = false;
+        copyBtn.classList.remove('disabled');
+      }
+    }
   }
 
   /**

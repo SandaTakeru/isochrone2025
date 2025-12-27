@@ -18,6 +18,8 @@
   // === UI コントローラー初期化 ===
   const uiController = new UIController();
   uiController.initMobileMenu();
+  uiController.initHeatmapGradientUI();
+  uiController.initCopyStationListButton();
   
   // === URL状態管理関数 ===
   /**
@@ -30,6 +32,8 @@
     const lat = params.get('lat');
     const lng = params.get('lng');
     const time = params.get('time');
+    const locked = params.get('locked');  // 到達圏固定状態
+    const gradient = params.get('gradient');  // ヒートマップグラデーション設定
     
     // 座標の有効性をチェック（maxBounds の範囲内かどうか）
     let validLat = null;
@@ -60,35 +64,344 @@
     return {
       lat: validLat,
       lng: validLng,
-      time: time ? parseInt(time) : 60  // デフォルト60分
+      time: time ? parseInt(time) : 60,  // デフォルト60分
+      locked: locked === 'true',  // 到達圏固定状態（デフォルトはfalse）
+      gradient: gradient && (gradient === 'positive' || gradient === 'negative') ? gradient : 'positive'  // グラデーション設定
     };
   }
   
   /**
    * 現在の状態をURLに保存
    */
-  function updateUrlWithState(originLngLat, timeMinutes) {
+  function updateUrlWithState(originLngLat, timeMinutes, isLocked = false, gradientType = 'positive') {
     if(!originLngLat) return;
     
     const params = new URLSearchParams();
     params.set('lat', originLngLat[1].toFixed(6));  // lat
     params.set('lng', originLngLat[0].toFixed(6));  // lng
     params.set('time', timeMinutes);
+    params.set('gradient', gradientType);  // グラデーション設定を保存
+    if(isLocked) {
+      params.set('locked', 'true');  // 固定状態を保存
+    }
     
     window.history.replaceState({}, '', `?${params.toString()}`);
   }
   
   /**
    * 現在のURLをクリップボードにコピー
+   * 到達圏の固定状態を選択するダイアログを表示
    */
   function copyUrlToClipboard() {
     const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-      alert('設定をコピーしました！リンクを共有してください。');
-    }).catch((err) => {
-      console.error('URLコピー失敗:', err);
-      alert('コピーに失敗しました。');
+    
+    // ダイアログを表示して固定状態を選択
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+    `;
+    
+    const content = document.createElement('div');
+    content.style.cssText = `
+      background: white;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+      max-width: 380px;
+      text-align: center;
+      font-family: system-ui, -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP';
+    `;
+    
+    const title = document.createElement('h3');
+    title.textContent = '🔗 リンクを共有';
+    title.style.cssText = `
+      margin: 0 0 12px 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a1a1a;
+    `;
+    
+    const description = document.createElement('p');
+    description.textContent = '共有モードを選択してください';
+    description.style.cssText = `
+      margin: 0 0 24px 0;
+      font-size: 14px;
+      color: #666;
+      line-height: 1.5;
+    `;
+    
+    const optionsContainer = document.createElement('div');
+    optionsContainer.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    `;
+    
+    // オプション1：編集モードON
+    const option1 = document.createElement('div');
+    option1.style.cssText = `
+      display: flex;
+      align-items: center;
+      padding: 14px;
+      border: 2px solid #d0d0d0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f0f0f0;
+    `;
+    
+    const radio1 = document.createElement('input');
+    radio1.type = 'radio';
+    radio1.name = 'share-option';
+    radio1.value = 'dynamic';
+    radio1.checked = true;
+    radio1.style.cssText = `
+      margin-right: 12px;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+    `;
+    
+    const label1 = document.createElement('div');
+    label1.style.cssText = `
+      flex: 1;
+      text-align: left;
+    `;
+    const label1Title = document.createElement('div');
+    label1Title.textContent = '🕹️ 編集モードで共有';
+    label1Title.style.cssText = `
+      font-weight: 600;
+      font-size: 14px;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    `;
+    const label1Desc = document.createElement('div');
+    label1Desc.textContent = '共有相手も出発地点を変更できます';
+    label1Desc.style.cssText = `
+      font-size: 12px;
+      color: #888;
+    `;
+    label1.appendChild(label1Title);
+    label1.appendChild(label1Desc);
+    
+    option1.appendChild(radio1);
+    option1.appendChild(label1);
+    
+    // オプション2：固定
+    const option2 = document.createElement('div');
+    option2.style.cssText = `
+      display: flex;
+      align-items: center;
+      padding: 14px;
+      border: 2px solid #e8e8e8;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #fafafa;
+    `;
+    
+    const radio2 = document.createElement('input');
+    radio2.type = 'radio';
+    radio2.name = 'share-option';
+    radio2.value = 'fixed';
+    radio2.style.cssText = `
+      margin-right: 12px;
+      cursor: pointer;
+      width: 18px;
+      height: 18px;
+      accent-color: #0066cc;
+    `;
+    
+    const label2 = document.createElement('div');
+    label2.style.cssText = `
+      flex: 1;
+      text-align: left;
+    `;
+    const label2Title = document.createElement('div');
+    label2Title.textContent = '🔒 固定モードで共有';
+    label2Title.style.cssText = `
+      font-weight: 600;
+      font-size: 14px;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    `;
+    const label2Desc = document.createElement('div');
+    label2Desc.textContent = '共有相手は出発地点を変更できません';
+    label2Desc.style.cssText = `
+      font-size: 12px;
+      color: #888;
+    `;
+    label2.appendChild(label2Title);
+    label2.appendChild(label2Desc);
+    
+    option2.appendChild(radio2);
+    option2.appendChild(label2);
+    
+    // スタイル定義
+    // スタイル定義（共通化）
+    const colorConfig = {
+      selected: { border: '#0066cc', bg: '#f0f4ff', hoverBorder: '#0052a3', hoverBg: '#e8f2ff' },
+      unselected: { border: '#e8e8e8', bg: '#fafafa', hoverBorder: '#d0d0d0', hoverBg: '#f5f5f5' }
+    };
+    
+    const styles = {
+      option1: colorConfig,
+      option2: colorConfig
+    };
+    
+    // スタイル適用関数（状態とホバー状態に応じて色を設定）
+    function applyOptionStyle(option, radio, styleSet, isHover = false) {
+      const state = radio.checked ? 'selected' : 'unselected';
+      const color = styleSet[state];
+      option.style.borderColor = isHover ? color.hoverBorder : color.border;
+      option.style.background = isHover ? color.hoverBg : color.bg;
+    }
+    
+    // 全オプションのスタイルを更新
+    function updateAllOptionStyles() {
+      applyOptionStyle(option1, radio1, styles.option1);
+      applyOptionStyle(option2, radio2, styles.option2);
+    }
+    
+    // option1のイベント
+    option1.addEventListener('mouseenter', () => {
+      applyOptionStyle(option1, radio1, styles.option1, true);
     });
+    option1.addEventListener('mouseleave', () => {
+      applyOptionStyle(option1, radio1, styles.option1, false);
+    });
+    option1.addEventListener('click', () => {
+      radio1.checked = true;
+      updateAllOptionStyles();
+    });
+    
+    // option2のイベント
+    option2.addEventListener('mouseenter', () => {
+      applyOptionStyle(option2, radio2, styles.option2, true);
+    });
+    option2.addEventListener('mouseleave', () => {
+      applyOptionStyle(option2, radio2, styles.option2, false);
+    });
+    option2.addEventListener('click', () => {
+      radio2.checked = true;
+      updateAllOptionStyles();
+    });
+    
+    // 初期スタイルを設定
+    updateAllOptionStyles();
+    
+    optionsContainer.appendChild(option1);
+    optionsContainer.appendChild(option2);
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.cssText = `
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    `;
+    
+    // キャンセルボタン
+    const btnCancel = document.createElement('button');
+    btnCancel.textContent = 'キャンセル';
+    btnCancel.style.cssText = `
+      flex: 1;
+      padding: 11px 16px;
+      border: 1px solid #d0d0d0;
+      background: white;
+      color: #333;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    `;
+    btnCancel.addEventListener('mouseenter', function() {
+      this.style.background = '#f8f8f8';
+      this.style.borderColor = '#c0c0c0';
+    });
+    btnCancel.addEventListener('mouseleave', function() {
+      this.style.background = 'white';
+      this.style.borderColor = '#d0d0d0';
+    });
+    btnCancel.addEventListener('click', () => {
+      dialog.remove();
+    });
+    
+    // コピーボタン
+    const btnCopy = document.createElement('button');
+    btnCopy.textContent = 'リンクを共有';
+    btnCopy.style.cssText = `
+      flex: 1;
+      padding: 11px 16px;
+      border: none;
+      background: #0066cc;
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    `;
+    btnCopy.addEventListener('mouseenter', function() {
+      this.style.background = '#0052a3';
+    });
+    btnCopy.addEventListener('mouseleave', function() {
+      this.style.background = '#0066cc';
+    });
+    btnCopy.addEventListener('click', function() {
+      // 選択されたオプションに基づいてURL生成
+      const isFixed = radio2.checked;
+      const params = new URLSearchParams();
+      params.set('lat', url.split('lat=')[1]?.split('&')[0] || '');
+      params.set('lng', url.split('lng=')[1]?.split('&')[0] || '');
+      params.set('time', url.split('time=')[1]?.split('&')[0] || '60');
+      params.set('gradient', layerManager.heatmapGradientType || 'positive');  // グラデーション設定を追加
+      
+      if(isFixed) {
+        params.set('locked', 'true');
+      }
+      
+      const shareUrl = window.location.origin + window.location.pathname + '?' + params.toString();
+      
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        const successMsg = isFixed 
+          ? '固定状態のリンクをコピーしました ✓'
+          : '編集可能なリンクをコピーしました ✓';
+        alert(successMsg);
+        dialog.remove();
+      }).catch((err) => {
+        console.error('URLコピー失敗:', err);
+        alert('コピーに失敗しました。');
+        dialog.remove();
+      });
+    });
+    
+    buttonContainer.appendChild(btnCancel);
+    buttonContainer.appendChild(btnCopy);
+    
+    content.appendChild(title);
+    content.appendChild(description);
+    content.appendChild(optionsContainer);
+    content.appendChild(buttonContainer);
+    dialog.appendChild(content);
+    
+    // ダイアログ背景クリックで閉じる
+    dialog.addEventListener('click', (e) => {
+      if(e.target === dialog) {
+        dialog.remove();
+      }
+    });
+    
+    document.body.appendChild(dialog);
   }
   
   // === マップ初期化 ===
@@ -183,7 +496,7 @@
   // === グローバル状態 ===
   let origin = null;
   let originMarkerSource = null;
-  let isIsochroneLocked = false;
+  let isIsochroneLocked = urlState.locked || false;  // URLから読み込まれた固定状態
   const stationUrl = config.data.stations;
   const graphUrl = config.data.graph;
   
@@ -196,6 +509,27 @@
 
   // === レイヤマネージャー ===
   const layerManager = new MapLayerManager(map);
+  uiController.setLayerManager(layerManager);
+  
+  // === URLから読み込んだグラデーション設定をUIと layerManager に反映 ===
+  if(urlState.gradient) {
+    layerManager.heatmapGradientType = urlState.gradient;
+    // ラジオボタンを更新
+    const gradientRadios = document.getElementsByName('heatmapGradient');
+    gradientRadios.forEach(radio => {
+      if(radio.value === urlState.gradient) {
+        radio.checked = true;
+      }
+    });
+  }
+
+  // === グラデーション変更時のコールバック（URL自動更新） ===
+  uiController.setOnGradientChange((gradientType) => {
+    // 出発地点が設定されている場合のみURLを更新
+    if(origin) {
+      updateUrlWithState(origin, selectedTimeMinutes, isIsochroneLocked, gradientType);
+    }
+  });
 
   // === ズーム表示更新 ===
   function updateZoomDisplay() {
@@ -226,13 +560,14 @@
       //     localStorage容量の制限を回避し、常に最新データを保証
       const dataStartTime = performance.now();
       
-      const [graph, railFC, stationFC, prefectureFC, townFC, airportFC] = await Promise.all([
+      const [graph, railFC, stationFC, prefectureFC, townFC, airportFC, ferryFC] = await Promise.all([
         fetchJson(graphUrl),               // 3.3MB - キャッシュなし（容量大）
         fetchJson(config.data.rails),      // 14MB - キャッシュなし（容量大）
         fetchJson(stationUrl),             // 2.2MB - キャッシュなし（容量大）
         fetchJson('./geojson/prefecture.geojson'),
         fetchJson('./geojson/town.geojson'),
-        fetchJson('./geojson/airport.geojson')
+        fetchJson('./geojson/airport.geojson'),
+        fetchJson('./geojson/ferry.geojson')
       ]);
       
       const dataLoadTime = (performance.now() - dataStartTime) / 1000;
@@ -240,19 +575,41 @@
       
       loadingManager.setProgress(40);
 
-      // グラフ準備
+      // === グラフ形式判定と変換 ===
+      // railway_graph_final.json形式: {nodes: [], edges: []}
+      // station_graph.json形式: {nodeId: {connectedId: cost, ...}, ...} (隣接リスト)
       const nodes = new Map();
-      graph.nodes.forEach(n => {
-        nodes.set(n.id, {name: n.name});
-      });
-      
       const adj = new Map();
-      graph.edges.forEach(e => {
-        if(!adj.has(e.from)) adj.set(e.from, []);
-        adj.get(e.from).push({to: e.to, cost: e.cost});
-        if(!adj.has(e.to)) adj.set(e.to, []);
-        adj.get(e.to).push({to: e.from, cost: e.cost});
-      });
+      
+      if(graph.nodes && Array.isArray(graph.nodes)) {
+        // 旧形式: nodes + edges 配列
+        console.log('[Graph] Loading old format (nodes/edges arrays)');
+        graph.nodes.forEach(n => {
+          nodes.set(n.id, {name: n.name});
+        });
+        graph.edges.forEach(e => {
+          if(!adj.has(e.from)) adj.set(e.from, []);
+          adj.get(e.from).push({to: e.to, cost: e.cost});
+          if(!adj.has(e.to)) adj.set(e.to, []);
+          adj.get(e.to).push({to: e.from, cost: e.cost});
+        });
+      } else {
+        // 新形式: 隣接リスト {nodeId: {connectedId: cost, ...}}
+        console.log('[Graph] Loading new format (adjacency list)');
+        // 隣接リストをそのまま adj Map に変換
+        for(const nodeId in graph) {
+          const nodeIdNum = Number(nodeId);
+          nodes.set(nodeIdNum, {name: ''});  // 駅名はgeojsonから補填
+          
+          const adjacencies = graph[nodeId];
+          const edges = [];
+          for(const connectedId in adjacencies) {
+            const cost = adjacencies[connectedId];
+            edges.push({to: Number(connectedId), cost: cost});
+          }
+          adj.set(nodeIdNum, edges);
+        }
+      }
 
       // 駅・線路データ処理
       loadingManager.setText('地図データを処理中...');
@@ -269,6 +626,10 @@
 
       // 空港レイヤを追加
       await layerManager.loadAirportsWithData(airportFC);
+      loadingManager.setProgress(88);
+
+      // フェリーレイヤを追加
+      await layerManager.loadFerriesWithData(ferryFC);
       loadingManager.setProgress(90);
 
       // 路線テキストラベルレイヤを追加
@@ -313,7 +674,7 @@
         // ロック状態では点滅しない（固定色）
         if(isLocked) {
           if(map.getLayer(layerId)) {
-            map.setPaintProperty(layerId, 'circle-color', '#9933ff'); // 紫色
+            map.setPaintProperty(layerId, 'circle-color', '#1a1a1a');
           }
           return;
         }
@@ -383,7 +744,7 @@
           source: 'origin-marker',
           paint: {
             'circle-radius': 10,
-            'circle-color': isIsochroneLocked ? '#9933ff' : '#ff0000',
+            'circle-color': isIsochroneLocked ? '#1a1a1a' : '#ff0000',
             'circle-stroke-width': 3,
             'circle-stroke-color': '#fff'
           },
@@ -401,13 +762,14 @@
       let lastComputedTime = null;        // 最後に計算した時間
       let lastComputedStations = null;    // 最後に計算した最寄り駅キャッシュ
       
-      async function computeIsochrones(skipCacheCheck = false) {
+      async function computeIsochrones(skipCacheCheck = false, isInitialComputation = false) {
         if(!origin) {
           alert('地図をクリックして出発地点を指定してください');
           return;
         }
 
-        if(isIsochroneLocked) {
+        // ロック状態の場合、初期計算以外はスキップ
+        if(isIsochroneLocked && !isInitialComputation) {
           console.log('[Info] 到達圏が固定されているため、再計算はできません');
           return;
         }
@@ -464,13 +826,15 @@
               },
               properties: {
                 cost_seconds: 0,
+                remaining_cost_seconds: selectedTimeMinutes * 60,
                 station_name: '開始地点',
                 lat: origin[1],
                 lon: origin[0]
               }
             };
             
-            layerManager.addIsochrones([originFeature], ['#ff0000'], STEP_MIN, selectedTimeMinutes);
+            const selectedGradient = layerManager.heatmapGradientType || 'positive';
+            layerManager.addIsochrones([originFeature], ['#ff0000'], STEP_MIN, selectedTimeMinutes, selectedGradient);
             // テーブルには開始地点を表示しない（空配列）
             uiController.displayStationTable([]);
             return;
@@ -511,7 +875,8 @@
               }
             };
             
-            layerManager.addIsochrones([originFeature], originOnlyColors, STEP_MIN, selectedTimeMinutes);
+            const selectedGradient = layerManager.heatmapGradientType || 'positive';
+            layerManager.addIsochrones([originFeature], originOnlyColors, STEP_MIN, selectedTimeMinutes, selectedGradient);
             // テーブルには開始地点を表示しない（空配列）
             uiController.displayStationTable([]);
             
@@ -556,13 +921,13 @@
           
           // 開始地点をフィーチャの先頭に追加
           allIsochroneFeatures.unshift(originFeature);
-
           if(window.AppConfig.debug.enabled) {
             console.log(`[DEBUG] Generated ${allIsochroneFeatures.length} isochrone point features from ${nearestStations.length} nodes (including origin)`);
           }
 
-          // レイヤ追加
-          layerManager.addIsochrones(allIsochroneFeatures, colors, STEP_MIN, selectedTimeMinutes);
+          // レイヤ追加（グラデーション設定を取得）
+          const selectedGradient = layerManager.heatmapGradientType || 'positive';
+          layerManager.addIsochrones(allIsochroneFeatures, colors, STEP_MIN, selectedTimeMinutes, selectedGradient);
 
           // === Web メルカトル投影補正を適用 ===
           const correction = window.MercatorCorrection.calculateLatitudeCorrection(origin[1]);
@@ -604,29 +969,15 @@
       // === UI イベントハンドラ ===
       // (リセット、ロック機能は右クリックメニューで実装)
       
-      // === 時間入力制御（スライダー＋ボタン） ===
-      const timeSlider = id('timeSlider');
-      const timeDisplay = id('timeDisplay');
-      const timeDecreaseBtn = id('timeDecreaseBtn');
-      const timeIncreaseBtn = id('timeIncreaseBtn');
+      // === 時間入力制御（ドロップダウン） ===
+      const hourSelect = id('hourSelect');
+      const minuteSelect = id('minuteSelect');
       
-      const MIN_MINUTES = 10;   // 最小値：10分
+      const MIN_MINUTES = 5;    // 最小値：5分
       const MAX_MINUTES = 720;  // 最大値：12時間
-      const STEP_MINUTES = 10;  // スライダーステップ：10分
       
-      /**
-       * スライダー値を分に変換（10分単位）
-       */
-      function sliderToMinutes(sliderValue) {
-        return parseInt(sliderValue) * STEP_MINUTES;
-      }
-      
-      /**
-       * 分をスライダー値に変換
-       */
-      function minutesToSlider(minutes) {
-        return Math.round(minutes / STEP_MINUTES);
-      }
+      let debounceTimer = null;
+      const DEBOUNCE_DELAY = 500; // デバウンス遅延（ミリ秒）
       
       /**
        * 分を表示形式に変換
@@ -645,73 +996,89 @@
       }
       
       /**
+       * 再計算処理（デバウンス付き）
+       */
+      function debouncedCompute() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          if(origin && !isIsochroneLocked) {
+            computeIsochrones(true);  // skipCacheCheck=true で必ず再計算
+          }
+        }, DEBOUNCE_DELAY);
+      }
+      
+      /**
        * 時間表示を更新
        */
       function updateTimeDisplay(minutes) {
         minutes = Math.max(MIN_MINUTES, Math.min(MAX_MINUTES, minutes));
-        timeDisplay.textContent = minutesToDisplayText(minutes);
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        
+        // ドロップダウンを更新
+        if(hourSelect) {
+          hourSelect.value = hours;
+        }
+        if(minuteSelect) {
+          minuteSelect.value = mins;
+        }
+        
         selectedTimeMinutes = minutes;
         
-        // スライダーを同期
-        timeSlider.value = minutesToSlider(minutes);
+        // コピーボタンをリセット
+        uiController.resetCopyStationListBtn();
         
-        // ボタンの有効/無効を更新
-        if(timeDecreaseBtn) {
-          timeDecreaseBtn.disabled = minutes <= MIN_MINUTES;
-        }
-        if(timeIncreaseBtn) {
-          timeIncreaseBtn.disabled = minutes >= MAX_MINUTES;
-        }
-        
-        // URL状態を更新
+        // URL状態を更新（固定状態も含める）
         if(origin) {
-          updateUrlWithState(origin, minutes);
+          updateUrlWithState(origin, minutes, isIsochroneLocked, layerManager.heatmapGradientType);
         }
       }
       
-      // スライダーイベント（10分単位）
-      if(timeSlider) {
-        // input イベント：表示だけ更新（スライダードラッグ中は計算しない）
-        timeSlider.addEventListener('input', function() {
-          const minutes = sliderToMinutes(this.value);
-          updateTimeDisplay(minutes);
-        });
-        
-        // change イベント：ドラッグ終了時に再解析を実行
-        timeSlider.addEventListener('change', function() {
-          const minutes = sliderToMinutes(this.value);
-          if(origin && !isIsochroneLocked) {
-            computeIsochrones(true);  // skipCacheCheck=true で必ず再計算
+      // 時間選択変更イベント
+      if(hourSelect) {
+        hourSelect.addEventListener('change', function() {
+          const hours = parseInt(hourSelect.value, 10);
+          const minutes = parseInt(minuteSelect.value, 10);
+          const totalMinutes = hours * 60 + minutes;
+          
+          // 最小値チェック（5分未満は5分に、12時間超は12時間に）
+          let finalMinutes = totalMinutes;
+          if(finalMinutes < MIN_MINUTES) {
+            finalMinutes = MIN_MINUTES;
+            updateTimeDisplay(finalMinutes);
+          } else if(finalMinutes > MAX_MINUTES) {
+            finalMinutes = MAX_MINUTES;
+            updateTimeDisplay(finalMinutes);
           }
-          status(`到達時間を ${minutesToDisplayText(minutes)} に変更しました`);
+          
+          selectedTimeMinutes = finalMinutes;
+          updateUrlWithState(origin, finalMinutes, isIsochroneLocked, layerManager.heatmapGradientType);
+          debouncedCompute();
+          status(`到達時間を ${minutesToDisplayText(finalMinutes)} に変更しました`);
         });
       }
       
-      // 減少ボタンイベント（1分単位で減少）
-      if(timeDecreaseBtn) {
-        timeDecreaseBtn.addEventListener('click', function() {
-          const currentMinutes = selectedTimeMinutes;
-          const newMinutes = Math.max(MIN_MINUTES, currentMinutes - 1);
-          updateTimeDisplay(newMinutes);
+      // 分選択変更イベント
+      if(minuteSelect) {
+        minuteSelect.addEventListener('change', function() {
+          const hours = parseInt(hourSelect.value, 10);
+          const minutes = parseInt(minuteSelect.value, 10);
+          const totalMinutes = hours * 60 + minutes;
           
-          if(origin && !isIsochroneLocked) {
-            computeIsochrones(true);  // skipCacheCheck=true で必ず再計算
+          // 最小値チェック（5分未満は5分に、12時間超は12時間に）
+          let finalMinutes = totalMinutes;
+          if(finalMinutes < MIN_MINUTES) {
+            finalMinutes = MIN_MINUTES;
+            updateTimeDisplay(finalMinutes);
+          } else if(finalMinutes > MAX_MINUTES) {
+            finalMinutes = MAX_MINUTES;
+            updateTimeDisplay(finalMinutes);
           }
-          status(`到達時間を ${minutesToDisplayText(newMinutes)} に変更しました`);
-        });
-      }
-      
-      // 増加ボタンイベント（1分単位で増加）
-      if(timeIncreaseBtn) {
-        timeIncreaseBtn.addEventListener('click', function() {
-          const currentMinutes = selectedTimeMinutes;
-          const newMinutes = Math.min(MAX_MINUTES, currentMinutes + 1);
-          updateTimeDisplay(newMinutes);
           
-          if(origin && !isIsochroneLocked) {
-            computeIsochrones(true);  // skipCacheCheck=true で必ず再計算
-          }
-          status(`到達時間を ${minutesToDisplayText(newMinutes)} に変更しました`);
+          selectedTimeMinutes = finalMinutes;
+          updateUrlWithState(origin, finalMinutes, isIsochroneLocked, layerManager.heatmapGradientType);
+          debouncedCompute();
+          status(`到達時間を ${minutesToDisplayText(finalMinutes)} に変更しました`);
         });
       }
       
@@ -745,9 +1112,11 @@
         
         // リセットボタン
         menuItems.push({
-          label: '到達圏をリセット',
+          label: 'リセット',
+          description: '到達圏をクリア',
           icon: '🔄',
-          action: () => resetAll()
+          action: () => resetAll(),
+          color: '#ff6b6b'
         });
         
         menuItems.push(null); // 分割線プレースホルダー
@@ -756,7 +1125,8 @@
         if(origin) {
           if(isIsochroneLocked) {
             menuItems.push({
-              label: '固定を解除',
+              label: '固定モード OFF',
+              description: '編集をアンロックします',
               icon: '🔓',
               action: () => {
                 isIsochroneLocked = false;
@@ -765,78 +1135,146 @@
                   map.setPaintProperty('origin-marker-layer', 'circle-color', '#ff0000');
                   startBeaconAnimation('origin-marker-layer', false);
                 }
+                // URLを更新（locked パラメータを削除）
+                if(origin) {
+                  updateUrlWithState(origin, selectedTimeMinutes, false);
+                }
                 status('到達圏の固定を解除しました。');
-              }
+              },
+              color: '#4ecdc4'
             });
           } else {
             menuItems.push({
-              label: '到達圏を固定',
+              label: '固定モード ON',
+              description: '編集をロックします',
               icon: '🔒',
               action: () => {
                 isIsochroneLocked = true;
-                // マーカーの色を紫に、点滅を停止
+                // マーカーの色を黒に、点滅を停止
                 if(map.getLayer('origin-marker-layer')) {
-                  map.setPaintProperty('origin-marker-layer', 'circle-color', '#9933ff');
+                  map.setPaintProperty('origin-marker-layer', 'circle-color', '#1a1a1a');
                   startBeaconAnimation('origin-marker-layer', true);
                 }
+                // URLを更新（locked パラメータを追加）
+                if(origin) {
+                  updateUrlWithState(origin, selectedTimeMinutes, true, layerManager.heatmapGradientType);
+                }
                 status('到達圏を固定しました。');
-              }
+              },
+              color: '#1a1a1a'
             });
           }
         }
         
-        // メニューHTML生成
-        let menuHTML = '<div style="background: white; border: 1px solid #ddd; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10000; position: fixed;">';
+        // メニューコンテナ生成
+        const menuContainer = document.createElement('div');
+        menuContainer.style.cssText = `
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+          overflow: hidden;
+          z-index: 10000;
+          position: fixed;
+          min-width: 200px;
+          font-family: system-ui, -apple-system, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP';
+        `;
         
-        for(const item of menuItems) {
+        // メニュー項目を生成
+        for(let i = 0; i < menuItems.length; i++) {
+          const item = menuItems[i];
+          
           if(item === null) {
-            menuHTML += '<div style="height: 1px; background: #eee; margin: 4px 0;"></div>';
-          } else {
-            menuHTML += `
-              <div class="contextMenuItem" style="padding: 10px 16px; cursor: pointer; user-select: none; white-space: nowrap; display: flex; align-items: center; gap: 8px;">
-                <span>${item.icon}</span>
-                <span>${item.label}</span>
-              </div>
+            // 分割線
+            const divider = document.createElement('div');
+            divider.style.cssText = `
+              height: 1px;
+              background: #f0f0f0;
+              margin: 6px 0;
             `;
+            menuContainer.appendChild(divider);
+          } else {
+            // メニューアイテム
+            const itemEl = document.createElement('div');
+            itemEl.style.cssText = `
+              padding: 12px 16px;
+              cursor: pointer;
+              user-select: none;
+              display: flex;
+              align-items: center;
+              gap: 12px;
+              transition: all 0.15s ease;
+              border-left: 3px solid transparent;
+            `;
+            
+            const iconEl = document.createElement('span');
+            iconEl.textContent = item.icon;
+            iconEl.style.cssText = `
+              font-size: 16px;
+            `;
+            
+            const textEl = document.createElement('div');
+            textEl.style.cssText = `
+              flex: 1;
+            `;
+            
+            const labelEl = document.createElement('div');
+            labelEl.textContent = item.label;
+            labelEl.style.cssText = `
+              font-weight: 500;
+              font-size: 14px;
+              color: #1a1a1a;
+            `;
+            
+            const descEl = document.createElement('div');
+            descEl.textContent = item.description;
+            descEl.style.cssText = `
+              font-size: 12px;
+              color: #999;
+              margin-top: 2px;
+            `;
+            
+            textEl.appendChild(labelEl);
+            textEl.appendChild(descEl);
+            
+            itemEl.appendChild(iconEl);
+            itemEl.appendChild(textEl);
+            
+            // ホバー効果
+            itemEl.addEventListener('mouseenter', function() {
+              this.style.backgroundColor = item.color + '15';  // 色を薄くしたバージョン
+              this.style.borderLeftColor = item.color;
+            });
+            itemEl.addEventListener('mouseleave', function() {
+              this.style.backgroundColor = 'transparent';
+              this.style.borderLeftColor = 'transparent';
+            });
+            itemEl.addEventListener('click', () => {
+              item.action();
+              if(contextMenu) contextMenu.remove();
+              contextMenu = null;
+            });
+            
+            menuContainer.appendChild(itemEl);
           }
         }
-        menuHTML += '</div>';
         
-        // DOM作成
-        const div = document.createElement('div');
-        div.innerHTML = menuHTML;
-        contextMenu = div.firstChild;
+        // 位置設定（画面の外に出ないように調整）
+        menuContainer.style.left = clientX + 'px';
+        menuContainer.style.top = clientY + 'px';
         
-        // 位置設定
-        contextMenu.style.left = clientX + 'px';
-        contextMenu.style.top = clientY + 'px';
+        document.body.appendChild(menuContainer);
+        contextMenu = menuContainer;
         
-        document.body.appendChild(contextMenu);
-        
-        // ホバースタイル設定（実際のメニュー項目のみ）
-        const menuItems_el = contextMenu.querySelectorAll('.contextMenuItem');
-        let itemIndex = 0;
-        
-        for(let i = 0; i < menuItems.length; i++) {
-          if(menuItems[i] === null) continue; // 分割線スキップ
-          
-          const el = menuItems_el[itemIndex];
-          const currentItem = menuItems[i];
-          
-          el.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#f0f0f0';
-          });
-          el.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = 'transparent';
-          });
-          el.addEventListener('click', () => {
-            currentItem.action();
-            if(contextMenu) contextMenu.remove();
-            contextMenu = null;
-          });
-          
-          itemIndex++;
-        }
+        // メニューが画面外に出ないように調整
+        setTimeout(() => {
+          const rect = menuContainer.getBoundingClientRect();
+          if(rect.right > window.innerWidth) {
+            menuContainer.style.left = (clientX - rect.width) + 'px';
+          }
+          if(rect.bottom > window.innerHeight) {
+            menuContainer.style.top = (clientY - rect.height) + 'px';
+          }
+        }, 0);
       }
       
       map.on('contextmenu', (e) => {
@@ -881,8 +1319,9 @@
             
             // 都市中心を出発地点として登録し、到達圏を計算
             origin = [city.lon, city.lat];
+            isIsochroneLocked = false;  // 新しい地点を選択したので、固定状態をリセット
             setOriginMarker(origin);
-            updateUrlWithState(origin, selectedTimeMinutes);  // URL更新
+            updateUrlWithState(origin, selectedTimeMinutes, false);  // URL更新
             loadingManager.setProgress(70);
             
             layerManager.clearIsochrones();
@@ -915,8 +1354,9 @@
         
         // 出発地点として登録し、到達圏を計算
         origin = [lon, lat];
+        isIsochroneLocked = false;  // 新しい地点を選択したので、固定状態をリセット
         setOriginMarker(origin);
-        updateUrlWithState(origin, selectedTimeMinutes);  // URL更新
+        updateUrlWithState(origin, selectedTimeMinutes, false, layerManager.heatmapGradientType);  // URL更新
         loadingManager.setProgress(70);
         
         layerManager.clearIsochrones();
@@ -935,7 +1375,8 @@
 
       // === 初期都市の到達圏を計算 ===
       setOriginMarker(origin);
-      await computeIsochrones(true);  // skipCacheCheck=true で初期計算も必ず実行
+      // 初期計算フラグを指定（URLから固定状態を読み込んだ場合も計算を実行）
+      await computeIsochrones(true, true);  // skipCacheCheck=true, isInitialComputation=true
 
       // === Debounce関数の定義（マップ移動時の頻繁な再計算を防ぐ） ===
       function debounce(func, delay) {
@@ -991,7 +1432,7 @@
               layerManager.currentPopup = null;
             }
             // 開始地点用のシンプルなポップアップ
-            const popup = new maplibregl.Popup()
+            const popup = new maplibregl.Popup({ anchor: 'bottom' })
               .setLngLat([stationLon, stationLat])
               .setHTML('<div style="padding: 8px;"><strong>開始地点</strong><br/>到達コスト: 0分</div>')
               .addTo(map);
@@ -1070,8 +1511,10 @@
         }
         
         origin = [e.lngLat.lng, e.lngLat.lat];
+        isIsochroneLocked = false;  // 新しい地点をクリックしたので、固定状態をリセット
         setOriginMarker(origin);
-        updateUrlWithState(origin, selectedTimeMinutes);  // URL更新
+        updateUrlWithState(origin, selectedTimeMinutes, false, layerManager.heatmapGradientType);  // URL更新
+        uiController.resetCopyStationListBtn();  // コピーボタンをリセット
         if(window.AppConfig.debug.enabled) {
           console.log('[DEBUG] origin set:', {lon: origin[0], lat: origin[1]});
         }

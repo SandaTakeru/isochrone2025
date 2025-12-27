@@ -1,6 +1,28 @@
 // assets/map-layers.js
 // レイヤ管理とマップコンポーネント
 
+// ヒートマップグラデーション定義
+const HEATMAP_GRADIENTS = {
+  positive: [
+    'interpolate',
+    ['linear'],
+    ['heatmap-density'],
+    0, 'rgba(255, 255, 255, 0)',
+    0.05, 'rgba(255, 220, 100, 1)',
+    0.1, 'rgba(100, 255, 60, 1)',
+    1, 'rgba(100, 255, 60, 1)'
+  ],
+  negative: [
+    'interpolate',
+    ['linear'],
+    ['heatmap-density'],
+    0, 'rgba(128, 128, 128, 1)',
+    0.05, 'rgba(128, 128, 128, 1)',
+    0.1, 'rgba(128, 128, 128, 0)',
+    1, 'rgba(128, 128, 128, 0)'
+  ]
+};
+
 class MapLayerManager {
   constructor(map) {
     this.map = map;
@@ -9,6 +31,7 @@ class MapLayerManager {
     this.isochronesPointLayerId = 'isochrones-point-layer';
     this.isochronesHeatmapLayerId = 'isochrones-heatmap-layer';
     this.HIT_BOX_SIZE = 15; // タップ判定エリアサイズ（ピクセル）
+    this.heatmapGradientType = 'positive'; // デフォルトはポジティブ表示
     
     // 【最適化】ズームレベル用キャッシュ
     this._lastStationFilter = null;
@@ -482,8 +505,9 @@ class MapLayerManager {
     
     return angle;
   }
-  addIsochrones(allIsochroneFeatures, colors, STEP_MIN, MAX_MIN) {
+  addIsochrones(allIsochroneFeatures, colors, STEP_MIN, MAX_MIN, gradientType = 'positive') {
     this.clearIsochrones();
+    this.heatmapGradientType = gradientType;
     
     // === ヒートマップレイヤの作成（全ズームレベルで表示） ===
     // 【最適化】余分なプロパティを除外、必要最小限のデータのみ保持
@@ -532,15 +556,7 @@ class MapLayerManager {
             0, 1,
             9, 4
           ],
-          'heatmap-color': [
-            'interpolate',
-            ['linear'],
-            ['heatmap-density'],
-            0, 'rgba(255, 255, 255, 0)',
-            0.05, 'rgba(255, 220, 100, 1)',
-            0.1, 'rgba(100, 255, 60, 1)',
-            1, 'rgba(100, 255, 60, 1)'
-          ],
+          'heatmap-color': HEATMAP_GRADIENTS[gradientType],
           // 1秒=1mのスケールで固定
           // 残り秒数（メートル）をズームレベルに応じてピクセルに変換
           // 係数: 2^(zoom-8) / 156543.03（Web Mercator投影）
@@ -574,6 +590,9 @@ class MapLayerManager {
           'heatmap-opacity': 0.5
         }
       }, 'building');
+    } else {
+      // レイヤが既に存在する場合はグラデーションを更新
+      this.map.setPaintProperty(this.isochronesHeatmapLayerId, 'heatmap-color', HEATMAP_GRADIENTS[gradientType]);
     }
     
     // === 到達コスト用の別ソースを作成（駅ソースを修正しない） ===
@@ -725,6 +744,23 @@ class MapLayerManager {
     // 市区町村ラベル: ズーム 11-24
     if(this.map.getLayer('town-label-layer')) {
       this.map.setLayerZoomRange('town-label-layer', 10, 24);
+    }
+  }
+
+  /**
+   * ヒートマップのグラデーションを切り替える
+   * @param {string} gradientType - 'positive' または 'negative'
+   */
+  switchHeatmapGradient(gradientType) {
+    if(!HEATMAP_GRADIENTS[gradientType]) {
+      console.warn(`[Warn] Invalid gradient type: ${gradientType}`);
+      return;
+    }
+    
+    this.heatmapGradientType = gradientType;
+    
+    if(this.map.getLayer(this.isochronesHeatmapLayerId)) {
+      this.map.setPaintProperty(this.isochronesHeatmapLayerId, 'heatmap-color', HEATMAP_GRADIENTS[gradientType]);
     }
   }
 
@@ -1279,7 +1315,185 @@ class MapLayerManager {
       throw e;
     }
   }
-  
+
+  async loadFerriesWithData(ferryFC) {
+    try {
+      perfStart('ferries-parse');
+      
+      // CRS detection and conversion
+      const ferryCrsName = ferryFC.crs && ferryFC.crs.properties && ferryFC.crs.properties.name || '';
+      const ferryIs3857 = ferryCrsName.indexOf('3857') !== -1;
+      
+      perfStart('ferries-iterate');
+      const ferryFeatures = [];
+      
+      ferryFC.features.forEach(f => {
+        const coords = f.geometry.coordinates;
+        let lon, lat;
+        
+        if(ferryIs3857) {
+          const lonlat = proj4('EPSG:3857','WGS84', coords);
+          lon = lonlat[0];
+          lat = lonlat[1];
+        } else {
+          lon = coords[0];
+          lat = coords[1];
+        }
+        
+        ferryFeatures.push({
+          type: 'Feature',
+          geometry: {
+            type: 'Point',
+            coordinates: [lon, lat]
+          },
+          properties: {
+            name: f.properties.n || 'フェリー',
+            id: f.properties.id || ''
+          }
+        });
+      });
+      perfEnd('ferries-iterate');
+      
+      // ソースを追加
+      if(!this.map.getSource('ferries')) {
+        perfStart('ferries-add-source');
+        this.map.addSource('ferries', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: ferryFeatures
+          },
+          buffer: 0
+        });
+        perfEnd('ferries-add-source');
+      }
+      
+      // SVG アイコン画像を登録
+      const iconImage = this._createFerryIcon();
+      if(!this.map.hasImage('ferry-icon')) {
+        this.map.addImage('ferry-icon', iconImage, { sdf: false });
+      }
+      
+      // フェリーシンボルレイヤを追加
+      const ferrySymbolLayerId = 'ferries-symbol-layer';
+      if(!this.map.getLayer(ferrySymbolLayerId)) {
+        perfStart('ferries-add-symbol-layer');
+        this.map.addLayer({
+          id: ferrySymbolLayerId,
+          type: 'symbol',
+          source: 'ferries',
+          minzoom: 0,
+          maxzoom: 24,
+          layout: {
+            'icon-image': 'ferry-icon',
+            'icon-size': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0, 0.4,
+              8, 0.6,
+              15, 0.8
+            ],
+            'icon-allow-overlap': true,
+            'icon-ignore-placement': true
+          },
+          paint: {
+            'icon-opacity': 1
+          }
+        });
+        perfEnd('ferries-add-symbol-layer');
+      }
+      
+      // フェリー名ラベルレイヤを追加（ズームレベル 12 以上で表示）
+      const ferryLabelLayerId = 'ferries-label-layer';
+      if(!this.map.getLayer(ferryLabelLayerId)) {
+        perfStart('ferries-add-label-layer');
+        this.map.addLayer({
+          id: ferryLabelLayerId,
+          type: 'symbol',
+          source: 'ferries',
+          minzoom: 12,
+          maxzoom: 24,
+          layout: {
+            'text-field': ['concat', ['get', 'name'], '港'],
+            'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+            'text-size': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              12, 10,
+              18, 14
+            ],
+            'text-offset': [0, 1.5],
+            'text-anchor': 'top',
+            'text-allow-overlap': false,
+            'text-ignore-placement': false
+          },
+          paint: {
+            'text-color': '#333',
+            'text-halo-color': '#fff',
+            'text-halo-width': 1.5
+          }
+        });
+        perfEnd('ferries-add-label-layer');
+      }
+      
+      perfEnd('ferries-parse');
+    } catch(e) {
+      console.error('[Error] loadFerriesWithData failed:', e);
+      throw e;
+    }
+  }
+
+  _createFerryIcon() {
+    const width = 32;
+    const height = 32;
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    
+    // 背景を透明にする
+    ctx.clearRect(0, 0, width, height);
+    
+    // 黒い錨のアイコン（絵文字⚓️ スタイル - 中サイズで太めに）
+    ctx.fillStyle = '#000000';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.save();
+    ctx.translate(width / 2, height / 2);
+    
+    // 上部のリング（1.2倍にスケール）
+    ctx.beginPath();
+    ctx.arc(0, -8.4, 2.4, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // シャフト（中央の軸）
+    ctx.beginPath();
+    ctx.moveTo(0, -6);
+    ctx.lineTo(0, 4.2);
+    ctx.stroke();
+    
+    // 左の爪（カーブして上に反る - 1.2倍にスケール）
+    ctx.beginPath();
+    ctx.moveTo(0, 4.2);
+    ctx.bezierCurveTo(-3.6, 7.2, -6, 5.4, -6, 1.8);
+    ctx.stroke();
+    
+    // 右の爪（カーブして上に反る - 1.2倍にスケール）
+    ctx.beginPath();
+    ctx.moveTo(0, 4.2);
+    ctx.bezierCurveTo(3.6, 7.2, 6, 5.4, 6, 1.8);
+    ctx.stroke();
+    
+    ctx.restore();
+    
+    // Canvas から ImageData を取得して返す
+    return ctx.getImageData(0, 0, width, height);
+  }
+
   // 空港アイコンの SVG 画像を作成
   _createAirportIcon() {
     const width = 32;
